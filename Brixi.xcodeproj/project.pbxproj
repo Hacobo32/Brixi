@@ -1,0 +1,312 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 70;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		BF0000000000000000000001 /* BrixiApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF0000000000000000000011 /* BrixiApp.swift */; };
+		BF0000000000000000000002 /* WearablesViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF0000000000000000000012 /* WearablesViewModel.swift */; };
+		BF0000000000000000000003 /* RegistrationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF0000000000000000000013 /* RegistrationView.swift */; };
+		BF0000000000000000000004 /* MWDATCore in Frameworks */ = {isa = PBXBuildFile; productRef = BF00000000000000000000B0 /* MWDATCore */; };
+		BF0000000000000000000005 /* MWDATMockDevice in Frameworks */ = {isa = PBXBuildFile; productRef = BF00000000000000000000B1 /* MWDATMockDevice */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		BF0000000000000000000010 /* Brixi.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Brixi.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		BF0000000000000000000011 /* BrixiApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BrixiApp.swift; sourceTree = "<group>"; };
+		BF0000000000000000000012 /* WearablesViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WearablesViewModel.swift; sourceTree = "<group>"; };
+		BF0000000000000000000013 /* RegistrationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RegistrationView.swift; sourceTree = "<group>"; };
+		BF0000000000000000000014 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		BF0000000000000000000020 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				BF0000000000000000000004 /* MWDATCore in Frameworks */,
+				BF0000000000000000000005 /* MWDATMockDevice in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		BF0000000000000000000030 = {
+			isa = PBXGroup;
+			children = (
+				BF0000000000000000000033 /* Brixi */,
+				BF0000000000000000000032 /* Frameworks */,
+				BF0000000000000000000031 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		BF0000000000000000000031 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				BF0000000000000000000010 /* Brixi.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		BF0000000000000000000032 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		BF0000000000000000000033 /* Brixi */ = {
+			isa = PBXGroup;
+			children = (
+				BF0000000000000000000034 /* ViewModels */,
+				BF0000000000000000000035 /* Views */,
+				BF0000000000000000000011 /* BrixiApp.swift */,
+				BF0000000000000000000014 /* Info.plist */,
+			);
+			path = Brixi;
+			sourceTree = "<group>";
+		};
+		BF0000000000000000000034 /* ViewModels */ = {
+			isa = PBXGroup;
+			children = (
+				BF0000000000000000000012 /* WearablesViewModel.swift */,
+			);
+			path = ViewModels;
+			sourceTree = "<group>";
+		};
+		BF0000000000000000000035 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				BF0000000000000000000013 /* RegistrationView.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		BF0000000000000000000040 /* Brixi */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = BF0000000000000000000090 /* Build configuration list for PBXNativeTarget "Brixi" */;
+			buildPhases = (
+				BF0000000000000000000070 /* Sources */,
+				BF0000000000000000000020 /* Frameworks */,
+				BF0000000000000000000060 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = Brixi;
+			packageProductDependencies = (
+				BF00000000000000000000B0 /* MWDATCore */,
+				BF00000000000000000000B1 /* MWDATMockDevice */,
+			);
+			productName = Brixi;
+			productReference = BF0000000000000000000010 /* Brixi.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		BF0000000000000000000050 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastSwiftUpdateCheck = 1620;
+				LastUpgradeCheck = 1620;
+				TargetAttributes = {
+					BF0000000000000000000040 = {
+						CreatedOnToolsVersion = 16.0;
+					};
+				};
+			};
+			buildConfigurationList = BF0000000000000000000091 /* Build configuration list for PBXProject "Brixi" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = BF0000000000000000000030;
+			packageReferences = (
+				BF00000000000000000000A0 /* XCRemoteSwiftPackageReference "meta-wearables-dat-ios" */,
+			);
+			productRefGroup = BF0000000000000000000031 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				BF0000000000000000000040 /* Brixi */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		BF0000000000000000000060 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		BF0000000000000000000070 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				BF0000000000000000000001 /* BrixiApp.swift in Sources */,
+				BF0000000000000000000002 /* WearablesViewModel.swift in Sources */,
+				BF0000000000000000000003 /* RegistrationView.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		BF0000000000000000000080 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = Brixi/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.brixi.app;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		BF0000000000000000000081 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = Brixi/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.brixi.app;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		BF0000000000000000000082 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		BF0000000000000000000083 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		BF0000000000000000000090 /* Build configuration list for PBXNativeTarget "Brixi" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				BF0000000000000000000080 /* Debug */,
+				BF0000000000000000000081 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		BF0000000000000000000091 /* Build configuration list for PBXProject "Brixi" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				BF0000000000000000000082 /* Debug */,
+				BF0000000000000000000083 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		BF00000000000000000000A0 /* XCRemoteSwiftPackageReference "meta-wearables-dat-ios" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/facebook/meta-wearables-dat-ios";
+			requirement = {
+				kind = exactVersion;
+				version = 0.9.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		BF00000000000000000000B0 /* MWDATCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = BF00000000000000000000A0 /* XCRemoteSwiftPackageReference "meta-wearables-dat-ios" */;
+			productName = MWDATCore;
+		};
+		BF00000000000000000000B1 /* MWDATMockDevice */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = BF00000000000000000000A0 /* XCRemoteSwiftPackageReference "meta-wearables-dat-ios" */;
+			productName = MWDATMockDevice;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = BF0000000000000000000050 /* Project object */;
+}
