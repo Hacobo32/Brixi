@@ -10,21 +10,22 @@
 // /connect-api and /add-device-sensors style follow-ups once this slice is verified.
 //
 
+import Combine
 import MWDATCore
-import Observation
 import SwiftUI
 
-@Observable
+// Uses Combine's ObservableObject rather than the iOS 17-only @Observable
+// macro, since this project's deployment target is iOS 16.0.
 @MainActor
-final class WearablesViewModel {
-  var registrationState: RegistrationState
-  var sessionState: DeviceSessionState?
-  var showError = false
-  var errorMessage = ""
+final class WearablesViewModel: ObservableObject {
+  @Published var registrationState: RegistrationState
+  @Published var sessionState: DeviceSessionState?
+  @Published var showError = false
+  @Published var errorMessage = ""
 
-  @ObservationIgnored private var registrationTask: Task<Void, Never>?
-  @ObservationIgnored private var sessionTask: Task<Void, Never>?
-  @ObservationIgnored private var deviceSession: DeviceSession?
+  private var registrationTask: Task<Void, Never>?
+  private var sessionTask: Task<Void, Never>?
+  private var deviceSession: DeviceSession?
   private let wearables: WearablesInterface
 
   init(wearables: WearablesInterface) {
@@ -38,7 +39,7 @@ final class WearablesViewModel {
     }
   }
 
-  isolated deinit {
+  deinit {
     registrationTask?.cancel()
     sessionTask?.cancel()
   }

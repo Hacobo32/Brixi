@@ -14,7 +14,7 @@ import MWDATMockDevice
 
 @main
 struct BrixiApp: App {
-  @State private var wearablesViewModel: WearablesViewModel
+  @StateObject private var wearablesViewModel: WearablesViewModel
 
   init() {
     do {
@@ -24,7 +24,7 @@ struct BrixiApp: App {
       NSLog("[Brixi] Failed to configure Wearables SDK: \(error)")
       #endif
     }
-    self._wearablesViewModel = State(wrappedValue: WearablesViewModel(wearables: Wearables.shared))
+    self._wearablesViewModel = StateObject(wrappedValue: WearablesViewModel(wearables: Wearables.shared))
   }
 
   var body: some Scene {

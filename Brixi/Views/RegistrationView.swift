@@ -9,7 +9,7 @@ import MWDATCore
 import SwiftUI
 
 struct RegistrationView: View {
-  var viewModel: WearablesViewModel
+  @ObservedObject var viewModel: WearablesViewModel
 
   var body: some View {
     VStack(spacing: 24) {
