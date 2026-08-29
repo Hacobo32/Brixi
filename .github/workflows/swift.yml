@@ -1,7 +1,9 @@
-# This workflow will build a Swift project
-# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-swift
+# This workflow builds the Brixi iOS app (Xcode project + Swift Package
+# Manager dependency on the Meta Wearables DAT SDK). There is no root
+# Package.swift, so plain `swift build`/`swift test` don't apply here —
+# the app must be built with xcodebuild against an iOS Simulator destination.
 
-name: Swift
+name: iOS
 
 on:
   push:
@@ -12,11 +14,16 @@ on:
 jobs:
   build:
 
-    runs-on: macos-latest
+    runs-on: macos-15
 
     steps:
     - uses: actions/checkout@v4
+    - name: Resolve Swift Package dependencies
+      run: xcodebuild -resolvePackageDependencies -project Brixi.xcodeproj -scheme Brixi
     - name: Build
-      run: swift build -v
-    - name: Run tests
-      run: swift test -v
+      run: |
+        xcodebuild build \
+          -project Brixi.xcodeproj \
+          -scheme Brixi \
+          -destination 'platform=iOS Simulator,name=iPhone 16' \
+          CODE_SIGNING_ALLOWED=NO
