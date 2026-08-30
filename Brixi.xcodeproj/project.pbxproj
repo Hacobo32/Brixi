@@ -12,6 +12,13 @@
 		BF0000000000000000000003 /* RegistrationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF0000000000000000000013 /* RegistrationView.swift */; };
 		BF0000000000000000000004 /* MWDATCore in Frameworks */ = {isa = PBXBuildFile; productRef = BF00000000000000000000B0 /* MWDATCore */; };
 		BF0000000000000000000005 /* MWDATMockDevice in Frameworks */ = {isa = PBXBuildFile; productRef = BF00000000000000000000B1 /* MWDATMockDevice */; };
+		BF00000000000000000000D0 /* DebugMenuView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF00000000000000000000C0 /* DebugMenuView.swift */; };
+		BF00000000000000000000D1 /* MockDeviceKitView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF00000000000000000000C1 /* MockDeviceKitView.swift */; };
+		BF00000000000000000000D2 /* MockDeviceCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF00000000000000000000C2 /* MockDeviceCardView.swift */; };
+		BF00000000000000000000D3 /* CardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF00000000000000000000C3 /* CardView.swift */; };
+		BF00000000000000000000D4 /* MockDeviceKitButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF00000000000000000000C4 /* MockDeviceKitButton.swift */; };
+		BF00000000000000000000D5 /* MockDeviceKitViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF00000000000000000000C5 /* MockDeviceKitViewModel.swift */; };
+		BF00000000000000000000D6 /* MockDeviceCardViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF00000000000000000000C6 /* MockDeviceCardViewModel.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -20,6 +27,13 @@
 		BF0000000000000000000012 /* WearablesViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WearablesViewModel.swift; sourceTree = "<group>"; };
 		BF0000000000000000000013 /* RegistrationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RegistrationView.swift; sourceTree = "<group>"; };
 		BF0000000000000000000014 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		BF00000000000000000000C0 /* DebugMenuView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DebugMenuView.swift; sourceTree = "<group>"; };
+		BF00000000000000000000C1 /* MockDeviceKitView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockDeviceKitView.swift; sourceTree = "<group>"; };
+		BF00000000000000000000C2 /* MockDeviceCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockDeviceCardView.swift; sourceTree = "<group>"; };
+		BF00000000000000000000C3 /* CardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CardView.swift; sourceTree = "<group>"; };
+		BF00000000000000000000C4 /* MockDeviceKitButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockDeviceKitButton.swift; sourceTree = "<group>"; };
+		BF00000000000000000000C5 /* MockDeviceKitViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockDeviceKitViewModel.swift; sourceTree = "<group>"; };
+		BF00000000000000000000C6 /* MockDeviceCardViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockDeviceCardViewModel.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -74,6 +88,8 @@
 			isa = PBXGroup;
 			children = (
 				BF0000000000000000000012 /* WearablesViewModel.swift */,
+				BF00000000000000000000C5 /* MockDeviceKitViewModel.swift */,
+				BF00000000000000000000C6 /* MockDeviceCardViewModel.swift */,
 			);
 			path = ViewModels;
 			sourceTree = "<group>";
@@ -82,6 +98,11 @@
 			isa = PBXGroup;
 			children = (
 				BF0000000000000000000013 /* RegistrationView.swift */,
+				BF00000000000000000000C0 /* DebugMenuView.swift */,
+				BF00000000000000000000C1 /* MockDeviceKitView.swift */,
+				BF00000000000000000000C2 /* MockDeviceCardView.swift */,
+				BF00000000000000000000C3 /* CardView.swift */,
+				BF00000000000000000000C4 /* MockDeviceKitButton.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -163,6 +184,13 @@
 				BF0000000000000000000001 /* BrixiApp.swift in Sources */,
 				BF0000000000000000000002 /* WearablesViewModel.swift in Sources */,
 				BF0000000000000000000003 /* RegistrationView.swift in Sources */,
+				BF00000000000000000000D0 /* DebugMenuView.swift in Sources */,
+				BF00000000000000000000D1 /* MockDeviceKitView.swift in Sources */,
+				BF00000000000000000000D2 /* MockDeviceCardView.swift in Sources */,
+				BF00000000000000000000D3 /* CardView.swift in Sources */,
+				BF00000000000000000000D4 /* MockDeviceKitButton.swift in Sources */,
+				BF00000000000000000000D5 /* MockDeviceKitViewModel.swift in Sources */,
+				BF00000000000000000000D6 /* MockDeviceCardViewModel.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

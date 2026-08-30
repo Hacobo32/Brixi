@@ -15,6 +15,10 @@ import MWDATMockDevice
 @main
 struct BrixiApp: App {
   @StateObject private var wearablesViewModel: WearablesViewModel
+  #if DEBUG
+  @State private var showDebugMenu = false
+  @StateObject private var mockDeviceKitViewModel = MockDeviceKitViewModel(mockDeviceKit: MockDeviceKit.shared)
+  #endif
 
   init() {
     do {
@@ -42,6 +46,14 @@ struct BrixiApp: App {
         } message: {
           Text(wearablesViewModel.errorMessage)
         }
+        #if DEBUG
+        .sheet(isPresented: $showDebugMenu) {
+          MockDeviceKitView(viewModel: mockDeviceKitViewModel)
+        }
+        .overlay {
+          DebugMenuView(showDebugMenu: $showDebugMenu)
+        }
+        #endif
     }
   }
 }
