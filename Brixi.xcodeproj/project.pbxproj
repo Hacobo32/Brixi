@@ -19,6 +19,11 @@
 		BF00000000000000000000D4 /* MockDeviceKitButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF00000000000000000000C4 /* MockDeviceKitButton.swift */; };
 		BF00000000000000000000D5 /* MockDeviceKitViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF00000000000000000000C5 /* MockDeviceKitViewModel.swift */; };
 		BF00000000000000000000D6 /* MockDeviceCardViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF00000000000000000000C6 /* MockDeviceCardViewModel.swift */; };
+		BF0000000000000000000110 /* BrickognizeModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF0000000000000000000100 /* BrickognizeModels.swift */; };
+		BF0000000000000000000111 /* BrickognizeClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF0000000000000000000101 /* BrickognizeClient.swift */; };
+		BF0000000000000000000112 /* PartIdentificationResult.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF0000000000000000000102 /* PartIdentificationResult.swift */; };
+		BF0000000000000000000113 /* BrickognizeTestViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF0000000000000000000103 /* BrickognizeTestViewModel.swift */; };
+		BF0000000000000000000114 /* BrickognizeTestView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF0000000000000000000104 /* BrickognizeTestView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -34,6 +39,11 @@
 		BF00000000000000000000C4 /* MockDeviceKitButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockDeviceKitButton.swift; sourceTree = "<group>"; };
 		BF00000000000000000000C5 /* MockDeviceKitViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockDeviceKitViewModel.swift; sourceTree = "<group>"; };
 		BF00000000000000000000C6 /* MockDeviceCardViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockDeviceCardViewModel.swift; sourceTree = "<group>"; };
+		BF0000000000000000000100 /* BrickognizeModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BrickognizeModels.swift; sourceTree = "<group>"; };
+		BF0000000000000000000101 /* BrickognizeClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BrickognizeClient.swift; sourceTree = "<group>"; };
+		BF0000000000000000000102 /* PartIdentificationResult.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PartIdentificationResult.swift; sourceTree = "<group>"; };
+		BF0000000000000000000103 /* BrickognizeTestViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BrickognizeTestViewModel.swift; sourceTree = "<group>"; };
+		BF0000000000000000000104 /* BrickognizeTestView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BrickognizeTestView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -78,6 +88,7 @@
 			children = (
 				BF0000000000000000000034 /* ViewModels */,
 				BF0000000000000000000035 /* Views */,
+				BF0000000000000000000120 /* Services */,
 				BF0000000000000000000011 /* BrixiApp.swift */,
 				BF0000000000000000000014 /* Info.plist */,
 			);
@@ -90,6 +101,7 @@
 				BF0000000000000000000012 /* WearablesViewModel.swift */,
 				BF00000000000000000000C5 /* MockDeviceKitViewModel.swift */,
 				BF00000000000000000000C6 /* MockDeviceCardViewModel.swift */,
+				BF0000000000000000000103 /* BrickognizeTestViewModel.swift */,
 			);
 			path = ViewModels;
 			sourceTree = "<group>";
@@ -103,8 +115,19 @@
 				BF00000000000000000000C2 /* MockDeviceCardView.swift */,
 				BF00000000000000000000C3 /* CardView.swift */,
 				BF00000000000000000000C4 /* MockDeviceKitButton.swift */,
+				BF0000000000000000000104 /* BrickognizeTestView.swift */,
 			);
 			path = Views;
+			sourceTree = "<group>";
+		};
+		BF0000000000000000000120 /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				BF0000000000000000000100 /* BrickognizeModels.swift */,
+				BF0000000000000000000101 /* BrickognizeClient.swift */,
+				BF0000000000000000000102 /* PartIdentificationResult.swift */,
+			);
+			path = Services;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -191,6 +214,11 @@
 				BF00000000000000000000D4 /* MockDeviceKitButton.swift in Sources */,
 				BF00000000000000000000D5 /* MockDeviceKitViewModel.swift in Sources */,
 				BF00000000000000000000D6 /* MockDeviceCardViewModel.swift in Sources */,
+				BF0000000000000000000110 /* BrickognizeModels.swift in Sources */,
+				BF0000000000000000000111 /* BrickognizeClient.swift in Sources */,
+				BF0000000000000000000112 /* PartIdentificationResult.swift in Sources */,
+				BF0000000000000000000113 /* BrickognizeTestViewModel.swift in Sources */,
+				BF0000000000000000000114 /* BrickognizeTestView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

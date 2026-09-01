@@ -17,7 +17,9 @@ struct BrixiApp: App {
   @StateObject private var wearablesViewModel: WearablesViewModel
   #if DEBUG
   @State private var showDebugMenu = false
+  @State private var showBrickognizeTest = false
   @StateObject private var mockDeviceKitViewModel = MockDeviceKitViewModel(mockDeviceKit: MockDeviceKit.shared)
+  @StateObject private var brickognizeTestViewModel = BrickognizeTestViewModel()
   #endif
 
   init() {
@@ -50,8 +52,11 @@ struct BrixiApp: App {
         .sheet(isPresented: $showDebugMenu) {
           MockDeviceKitView(viewModel: mockDeviceKitViewModel)
         }
+        .sheet(isPresented: $showBrickognizeTest) {
+          BrickognizeTestView(viewModel: brickognizeTestViewModel)
+        }
         .overlay {
-          DebugMenuView(showDebugMenu: $showDebugMenu)
+          DebugMenuView(showDebugMenu: $showDebugMenu, showBrickognizeTest: $showBrickognizeTest)
         }
         #endif
     }
