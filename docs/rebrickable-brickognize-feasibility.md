@@ -96,9 +96,23 @@ img_url`.
   only once usage scales past what a single client-side API key comfortably
   supports, or attribution/licensing needs centralizing.
 
-### Open item: licensing
+### Licensing — reviewed, permissive
 
-Rebrickable's data has historically been non-commercial / attribution-required by default, with commercial use requiring contacting them directly for a license. **Not verified live in this session** (egress to rebrickable.com is blocked in this sandbox) — confirm current terms with Rebrickable before any commercial launch. This is a business decision independent of the technical approach above.
+Checked against `rebrickable.com/terms/` and `rebrickable.com/downloads/`
+(via search-engine-extracted excerpts, since direct fetch of the site is
+blocked in this sandbox -- worth a firsthand skim, but the phrasing reads
+as verbatim quotes, not paraphrase):
+
+- **CSV database downloads:** usable for **any purpose, including
+  commercial**, provided you acknowledge Rebrickable as your data source.
+  Automated re-downloading is fine at up to once/day; scraping the actual
+  website pages (separate from the CSV dumps) is explicitly banned.
+- **Live API:** same — any purpose including commercial, attribution
+  "highly appreciated" (a request, not a hard requirement).
+- This is more permissive than initially assumed (a stricter
+  non-commercial default was the working assumption prior to review).
+  Practical takeaway: credit Rebrickable somewhere in the app (e.g. an
+  About/Credits screen) and this gate is closed.
 
 ## Part 2: Camera recognition — Brickognize
 
@@ -247,6 +261,29 @@ pattern, not a statistically rigorous benchmark.
   one-off manual sample) is worth running before committing to a specific
   auto-ID-vs-confirm-shortlist UX split.
 
+### Brickognize terms of service — reviewed, gap identified
+
+Checked against `brickognize.com/terms-of-service/` (same caveat as above
+-- excerpts via search, not a direct fetch):
+
+- The published terms are generic templated website-terms boilerplate:
+  non-affiliation with LEGO/BrickLink/BrickOwl/Rebrickable/Brickset, no
+  accuracy guarantees, standard liability disclaimers, and terms can
+  change without notice. It's written about "materials on the website,"
+  **not about API usage rights specifically** -- it doesn't explicitly
+  address embedding the recognition API inside a third-party commercial
+  app either way.
+- The more specific, more useful signal is the direct maintainer
+  correspondence above: free, no quota, 5 req/sec/IP, with a paid tier
+  coming "to cover costs" -- which implies he's fine with real usage
+  today, informally. That's a friendly email, not a binding commercial-use
+  grant.
+- **Recommendation:** current footing is fine to keep building on for a
+  prototype. Before a real launch, send a short explicit follow-up to
+  Piotr Rybak asking whether shipping this inside a commercial app is
+  acceptable -- a direct yes is worth more than inferring it from generic
+  boilerplate that wasn't written with this use case in mind.
+
 ## Summary
 
 | layer | source | access pattern | status |
@@ -256,11 +293,10 @@ pattern, not a statistically rigorous benchmark.
 | Camera → identity | Brickognize | live call, direct from client | API + roadmap + rate limits confirmed with maintainer |
 
 No third-party catalog aggregator or alternative recognition service adds
-value over this combination. Remaining gates before commercial launch, not
-technical ones: confirm Rebrickable's current commercial licensing terms,
-and read Brickognize's terms of service
-(`https://brickognize.com/terms-of-service/`, not yet reviewed) for any
-constraints on shipping it inside a commercial app.
+value over this combination. Licensing terms for both sources have been
+reviewed (see above) -- Rebrickable is fully clear for commercial use with
+attribution; Brickognize is fine informally but wants an explicit
+maintainer sign-off before a real commercial launch.
 
 ## Next steps
 
@@ -272,15 +308,33 @@ Done:
 - Confirmed minifigs decompose into their own part lists (see above).
 - Built and validated `data/schema.sql` + `data/build_catalog_db.py` for
   the bundled catalog tables.
+- Bundled the built SQLite catalog into the Xcode app target
+  (`Brixi/Data/brixi_catalog.sqlite`) with a Swift read-only accessor
+  (`Brixi/Data/CatalogDatabase.swift`).
+- Wired recognition to the catalog: `Brixi/Recognition/BrickognizeClient.swift`
+  calls the live API, `Brixi/Recognition/RecognitionService.swift` applies
+  the 0.7 confidence gate from the empirical testing and resolves matches
+  against `CatalogDatabase`.
+- Reviewed Rebrickable and Brickognize terms of service (see above).
+  Rebrickable is clear for commercial use with attribution; Brickognize
+  needs an explicit maintainer sign-off before a real launch, informal
+  footing is fine for now.
 
 Not yet started:
-- Review Rebrickable and Brickognize terms of service for commercial use.
-- Wire the built SQLite catalog into the Xcode app target (bundle it as a
-  resource, add a Swift data-access layer) and add a scheduled refresh job
-  rather than a manual one-shot build.
+- Confirm the app actually builds in Xcode. Blocked on hardware: the
+  project's format requires Xcode 16, which needs macOS Sonoma+, which
+  isn't available on the current dev machine (2015 MacBook Air, capped at
+  Monterey). Waiting on a new Mac to arrive.
+- Add a scheduled refresh job for the bundled catalog rather than the
+  current manual one-shot build script.
 - Design the "confirm from a shortlist" UX for decorated/niche pieces,
   as a fallback to silent auto-identification.
+- Build the actual camera-capture call site -- nothing in the app yet
+  calls `RecognitionService.recognize(imageData:)`; that depends on how
+  images come from the Meta DAT camera feed, which hasn't been scoped.
 - Run a larger, structured recognition trial under real bin-sorting
   conditions (ideally through the actual glasses camera pipeline, not a
   phone photo) to get a real accuracy number before committing to the
   auto-ID-vs-confirm-shortlist split.
+- Follow up with Piotr Rybak for an explicit commercial-use sign-off
+  before any real launch.
