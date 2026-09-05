@@ -19,6 +19,9 @@
 		BF00000000000000000000D4 /* MockDeviceKitButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF00000000000000000000C4 /* MockDeviceKitButton.swift */; };
 		BF00000000000000000000D5 /* MockDeviceKitViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF00000000000000000000C5 /* MockDeviceKitViewModel.swift */; };
 		BF00000000000000000000D6 /* MockDeviceCardViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF00000000000000000000C6 /* MockDeviceCardViewModel.swift */; };
+		BF00000000000000000000E0 /* CatalogDatabase.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF00000000000000000000F0 /* CatalogDatabase.swift */; };
+		BF00000000000000000000E1 /* brixi_catalog.sqlite in Resources */ = {isa = PBXBuildFile; fileRef = BF00000000000000000000F1 /* brixi_catalog.sqlite */; };
+		BF00000000000000000000E2 /* libsqlite3.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = BF00000000000000000000F2 /* libsqlite3.tbd */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -34,6 +37,9 @@
 		BF00000000000000000000C4 /* MockDeviceKitButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockDeviceKitButton.swift; sourceTree = "<group>"; };
 		BF00000000000000000000C5 /* MockDeviceKitViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockDeviceKitViewModel.swift; sourceTree = "<group>"; };
 		BF00000000000000000000C6 /* MockDeviceCardViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockDeviceCardViewModel.swift; sourceTree = "<group>"; };
+		BF00000000000000000000F0 /* CatalogDatabase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CatalogDatabase.swift; sourceTree = "<group>"; };
+		BF00000000000000000000F1 /* brixi_catalog.sqlite */ = {isa = PBXFileReference; lastKnownFileType = file; path = brixi_catalog.sqlite; sourceTree = "<group>"; };
+		BF00000000000000000000F2 /* libsqlite3.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libsqlite3.tbd; path = usr/lib/libsqlite3.tbd; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -43,6 +49,7 @@
 			files = (
 				BF0000000000000000000004 /* MWDATCore in Frameworks */,
 				BF0000000000000000000005 /* MWDATMockDevice in Frameworks */,
+				BF00000000000000000000E2 /* libsqlite3.tbd in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -69,6 +76,7 @@
 		BF0000000000000000000032 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				BF00000000000000000000F2 /* libsqlite3.tbd */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -78,10 +86,20 @@
 			children = (
 				BF0000000000000000000034 /* ViewModels */,
 				BF0000000000000000000035 /* Views */,
+				BF0000000000000000000036 /* Data */,
 				BF0000000000000000000011 /* BrixiApp.swift */,
 				BF0000000000000000000014 /* Info.plist */,
 			);
 			path = Brixi;
+			sourceTree = "<group>";
+		};
+		BF0000000000000000000036 /* Data */ = {
+			isa = PBXGroup;
+			children = (
+				BF00000000000000000000F0 /* CatalogDatabase.swift */,
+				BF00000000000000000000F1 /* brixi_catalog.sqlite */,
+			);
+			path = Data;
 			sourceTree = "<group>";
 		};
 		BF0000000000000000000034 /* ViewModels */ = {
@@ -171,6 +189,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				BF00000000000000000000E1 /* brixi_catalog.sqlite in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -191,6 +210,7 @@
 				BF00000000000000000000D4 /* MockDeviceKitButton.swift in Sources */,
 				BF00000000000000000000D5 /* MockDeviceKitViewModel.swift in Sources */,
 				BF00000000000000000000D6 /* MockDeviceCardViewModel.swift in Sources */,
+				BF00000000000000000000E0 /* CatalogDatabase.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
