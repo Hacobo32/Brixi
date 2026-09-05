@@ -154,6 +154,85 @@ independent of the Part 1 decision to optionally add a backend later for
 the catalog/`inventory_parts` sync — the two concerns don't need the same
 answer.)
 
+## Appendix: empirical testing against the live API (Sept 2026)
+
+Manual testing against the live `/predict/parts/` endpoint with real LEGO
+pieces, to validate the recognition assumption before further build-out.
+Small, informal sample (~20 LEGO photos) — sufficient to see a qualitative
+pattern, not a statistically rigorous benchmark.
+
+### Method notes
+
+- HEIC (the default iPhone photo format) is **not accepted** — the API
+  returns `{"message":"Unsupported file format: application/octet-stream"}`.
+  Converting to JPEG (`sips -s format jpeg`) before upload is a required
+  pipeline step, not optional.
+- Photo orientation was checked and confirmed correct (not sideways) after
+  conversion — ruled out as a confound in the results below.
+- Two separate confidence signals matter: `bounding_box.score` (confidence
+  something was localized in the frame) and `items[].score` (confidence in
+  the specific part-ID match). The default `min_similarity_items=0.5`
+  filters out low-confidence item matches entirely — re-running with
+  `min_similarity_items=0` surfaces what the model saw underneath a filtered
+  "no items found" response.
+
+### Results
+
+| scenario | bounding_box score | top item match | item score | verdict |
+|---|---:|---|---:|---|
+| single distinctive piece (web-effect weapon) | 0.78 | Weapon Web Effect (36083) | 0.89 | correct (confirmed) |
+| single distinctive piece (energy burst shield) | 0.79 | Power Burst Shield (35032e) | 0.86 | plausible, strong |
+| cluttered pile, dominant feature missed | 0.65 | Large Figure Armor Chest (27167) | 0.86 | incorrect — confident but wrong |
+| single decorated minifig torso | 0.85–0.90 | various decorated torsos (wrong exact print) | 0.26–0.38 | category correct, exact SKU wrong |
+| cluttered Bionicle/Hero Factory pile | 0.77–0.85 | Bionicle / Hero Factory / Energy Effect parts | 0.22–0.30 | category correct, exact SKU wrong |
+| small accessory in a pile | 0.72 | Minifigure Utensil candidates | 0.31–0.47 | category correct, exact SKU unconfirmed |
+| ~15 unrelated non-LEGO images (photos, wallpapers) | 0.0 | none | 0.0 | correct rejection — no false positives |
+
+### Key findings
+
+1. **Object localization is reliable, even in cluttered multi-piece
+   scenes.** High `bounding_box.score` values showed up consistently,
+   including on frames with a dozen-plus overlapping pieces. This is not
+   the bottleneck.
+2. **Exact-SKU classification is reliable for distinctive, simple-shaped,
+   single-material pieces** (weapon accessories, energy-effect pieces,
+   wedges) — these produced a single confident (>0.85) top match that
+   matched the photographed piece.
+3. **Exact-SKU classification is unreliable for richly decorated/printed
+   pieces and niche constraction-theme parts** (minifig torsos with unique
+   prints, Bionicle/Hero Factory parts). In these cases the model correctly
+   identifies the *category* (it knows it's looking at a decorated torso,
+   or a Bionicle part) but spreads confidence thinly (0.2–0.4) across
+   several plausible neighbors instead of landing on one clear, correct
+   answer. This tracks with the earlier `part_relationships.csv` finding
+   that the catalog contains large numbers of near-identical print/mold
+   variants.
+4. **No false positives on genuinely non-LEGO images** — random photos and
+   wallpapers correctly returned empty results, at the default threshold.
+5. **Run-to-run stability isn't perfect on color variants.** Two identical
+   repeat calls on the same file once returned two different (but
+   same-name) color-suffixed part IDs with an otherwise near-identical
+   score — the model can be ambiguous among close color variants of the
+   same physical mold.
+
+### Implication for Brixi's design
+
+- Treat "found a piece" and "identified exactly which piece" as two
+  separate, independently-reliable-or-not product moments. The former
+  supports a confident bounding-box/AR overlay; the latter does not,
+  uniformly.
+- Plain, common pieces — the bulk of a typical sorting bin — look like a
+  reasonable bet for silent, hands-free auto-identification.
+- Decorated minifig parts and niche/constraction pieces need a fallback:
+  surface the top few candidates (`top_k_items`) for the user to
+  confirm/pick, rather than trusting a single top match.
+- When joining a Brickognize result to the local Rebrickable-derived
+  catalog, resolve to the base part family rather than trusting an exact
+  color-suffixed variant ID, given the observed run-to-run instability.
+- A larger, structured trial under real bin-sorting conditions (not a
+  one-off manual sample) is worth running before committing to a specific
+  auto-ID-vs-confirm-shortlist UX split.
+
 ## Summary
 
 | layer | source | access pattern | status |
@@ -169,10 +248,22 @@ and read Brickognize's terms of service
 (`https://brickognize.com/terms-of-service/`, not yet reviewed) for any
 constraints on shipping it inside a commercial app.
 
-## Next steps (not yet started)
+## Next steps
 
+Done:
+- Prototyped the camera → Brickognize recognition step directly against
+  the live API (see empirical testing appendix above). Category-level
+  recognition validated; exact-SKU recognition validated only for a
+  subset of piece types.
+
+Not yet started:
 - Confirm whether minifigs decompose into their own part lists in the
   Rebrickable data.
 - Review Rebrickable and Brickognize terms of service for commercial use.
 - Design the actual SQLite schema and sync job for the bundled tables.
-- Prototype the camera → Brickognize → local catalog lookup loop.
+- Design the "confirm from a shortlist" UX for decorated/niche pieces,
+  as a fallback to silent auto-identification.
+- Run a larger, structured recognition trial under real bin-sorting
+  conditions (ideally through the actual glasses camera pipeline, not a
+  phone photo) to get a real accuracy number before committing to the
+  auto-ID-vs-confirm-shortlist split.
