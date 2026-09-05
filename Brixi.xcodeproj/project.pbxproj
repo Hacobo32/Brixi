@@ -22,6 +22,8 @@
 		BF00000000000000000000E0 /* CatalogDatabase.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF00000000000000000000F0 /* CatalogDatabase.swift */; };
 		BF00000000000000000000E1 /* brixi_catalog.sqlite in Resources */ = {isa = PBXBuildFile; fileRef = BF00000000000000000000F1 /* brixi_catalog.sqlite */; };
 		BF00000000000000000000E2 /* libsqlite3.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = BF00000000000000000000F2 /* libsqlite3.tbd */; };
+		BF00000000000000000000E3 /* BrickognizeClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF00000000000000000000F3 /* BrickognizeClient.swift */; };
+		BF00000000000000000000E4 /* RecognitionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF00000000000000000000F4 /* RecognitionService.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -40,6 +42,8 @@
 		BF00000000000000000000F0 /* CatalogDatabase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CatalogDatabase.swift; sourceTree = "<group>"; };
 		BF00000000000000000000F1 /* brixi_catalog.sqlite */ = {isa = PBXFileReference; lastKnownFileType = file; path = brixi_catalog.sqlite; sourceTree = "<group>"; };
 		BF00000000000000000000F2 /* libsqlite3.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libsqlite3.tbd; path = usr/lib/libsqlite3.tbd; sourceTree = SDKROOT; };
+		BF00000000000000000000F3 /* BrickognizeClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BrickognizeClient.swift; sourceTree = "<group>"; };
+		BF00000000000000000000F4 /* RecognitionService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecognitionService.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -87,6 +91,7 @@
 				BF0000000000000000000034 /* ViewModels */,
 				BF0000000000000000000035 /* Views */,
 				BF0000000000000000000036 /* Data */,
+				BF0000000000000000000037 /* Recognition */,
 				BF0000000000000000000011 /* BrixiApp.swift */,
 				BF0000000000000000000014 /* Info.plist */,
 			);
@@ -100,6 +105,15 @@
 				BF00000000000000000000F1 /* brixi_catalog.sqlite */,
 			);
 			path = Data;
+			sourceTree = "<group>";
+		};
+		BF0000000000000000000037 /* Recognition */ = {
+			isa = PBXGroup;
+			children = (
+				BF00000000000000000000F3 /* BrickognizeClient.swift */,
+				BF00000000000000000000F4 /* RecognitionService.swift */,
+			);
+			path = Recognition;
 			sourceTree = "<group>";
 		};
 		BF0000000000000000000034 /* ViewModels */ = {
@@ -211,6 +225,8 @@
 				BF00000000000000000000D5 /* MockDeviceKitViewModel.swift in Sources */,
 				BF00000000000000000000D6 /* MockDeviceCardViewModel.swift in Sources */,
 				BF00000000000000000000E0 /* CatalogDatabase.swift in Sources */,
+				BF00000000000000000000E3 /* BrickognizeClient.swift in Sources */,
+				BF00000000000000000000E4 /* RecognitionService.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

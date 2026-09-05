@@ -97,6 +97,11 @@ final class CatalogDatabase {
     }.first
   }
 
+  func colorName(colorId: Int) -> String? {
+    let sql = "SELECT name FROM colors WHERE id = ? LIMIT 1"
+    return query(sql, bindings: [.int(colorId)]) { stmt in columnText(stmt, 0) ?? "" }.first
+  }
+
   func themeName(themeId: Int) -> String? {
     let sql = "SELECT name FROM themes WHERE id = ? LIMIT 1"
     return query(sql, bindings: [.int(themeId)]) { stmt in columnText(stmt, 0) ?? "" }.first
