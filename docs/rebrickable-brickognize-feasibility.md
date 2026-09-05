@@ -42,10 +42,16 @@ different access patterns.
 | `inventory_sets` | 5,213 | sets that contain other sets |
 | `inventory_minifigs` | 25,740 | which minifigs a set's inventory contains |
 
-Open item, not yet confirmed: whether a `fig_num` can itself anchor an
-`inventories` row (i.e. whether a minifig has its own decomposable parts
-list the same way a set does). Worth a quick local check
-(`grep fig- inventories.csv`) before assuming either way.
+**Resolved:** minifigs do have their own decomposable parts list, the same
+way a set does. `inventories.set_num` is polymorphic -- most rows hold a
+real `set_num`, but a subset (exactly 17,162 rows, matching `minifigs.csv`
+row for row) instead hold a `fig_num` (confirmed: inventory `48649` has
+`set_num = "fig-000001"`, which is "Toy Store Employee" in `minifigs.csv`).
+Discovered by building the schema with a strict FK from
+`inventories.set_num` to `sets.set_num` and seeing exactly 17,162 violations
+-- the schema in `data/schema.sql` reflects this as an unconstrained column
+with a comment, not a hard FK, since SQLite can't express a conditional
+reference to either table.
 
 ### The big table: `inventory_parts` (not bundled)
 
@@ -75,6 +81,14 @@ img_url`.
   `inventory_sets`, `inventory_minifigs`. ~15MB raw, smaller once indexed.
 - **Fetch per-set, live:** `inventory_parts`, resolving images through the
   local `elements` join instead of storing per-row URLs.
+- **Schema and build script exist:** `data/schema.sql` (DDL for the 11
+  bundled tables) and `data/build_catalog_db.py` (loads a directory of
+  Rebrickable CSVs into a SQLite file matching that schema). Validated
+  end-to-end against the real CSVs -- all 11 tables load with row counts
+  matching the source files exactly, and `PRAGMA foreign_key_check` comes
+  back clean. Output is ~27MB for the current dataset. Not yet wired into
+  the Xcode app target or scheduled for periodic refresh -- this is the
+  one-shot build tool, not a running sync job yet.
 - **Backend: not needed for v1.** The repo currently has zero backend
   code — just the Meta Wearables DAT pairing scaffold. Default to calling
   Rebrickable's live API directly from the client with your own API key for
@@ -255,12 +269,15 @@ Done:
   the live API (see empirical testing appendix above). Category-level
   recognition validated; exact-SKU recognition validated only for a
   subset of piece types.
+- Confirmed minifigs decompose into their own part lists (see above).
+- Built and validated `data/schema.sql` + `data/build_catalog_db.py` for
+  the bundled catalog tables.
 
 Not yet started:
-- Confirm whether minifigs decompose into their own part lists in the
-  Rebrickable data.
 - Review Rebrickable and Brickognize terms of service for commercial use.
-- Design the actual SQLite schema and sync job for the bundled tables.
+- Wire the built SQLite catalog into the Xcode app target (bundle it as a
+  resource, add a Swift data-access layer) and add a scheduled refresh job
+  rather than a manual one-shot build.
 - Design the "confirm from a shortlist" UX for decorated/niche pieces,
   as a fallback to silent auto-identification.
 - Run a larger, structured recognition trial under real bin-sorting
