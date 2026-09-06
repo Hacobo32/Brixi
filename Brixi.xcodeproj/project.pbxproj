@@ -24,6 +24,8 @@
 		BF00000000000000000000E2 /* libsqlite3.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = BF00000000000000000000F2 /* libsqlite3.tbd */; };
 		BF00000000000000000000E3 /* BrickognizeClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF00000000000000000000F3 /* BrickognizeClient.swift */; };
 		BF00000000000000000000E4 /* RecognitionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF00000000000000000000F4 /* RecognitionService.swift */; };
+		BF00000000000000000000E5 /* RecognitionTestViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF00000000000000000000F5 /* RecognitionTestViewModel.swift */; };
+		BF00000000000000000000E6 /* RecognitionTestView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF00000000000000000000F6 /* RecognitionTestView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -44,6 +46,8 @@
 		BF00000000000000000000F2 /* libsqlite3.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libsqlite3.tbd; path = usr/lib/libsqlite3.tbd; sourceTree = SDKROOT; };
 		BF00000000000000000000F3 /* BrickognizeClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BrickognizeClient.swift; sourceTree = "<group>"; };
 		BF00000000000000000000F4 /* RecognitionService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecognitionService.swift; sourceTree = "<group>"; };
+		BF00000000000000000000F5 /* RecognitionTestViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecognitionTestViewModel.swift; sourceTree = "<group>"; };
+		BF00000000000000000000F6 /* RecognitionTestView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecognitionTestView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -112,6 +116,7 @@
 			children = (
 				BF00000000000000000000F3 /* BrickognizeClient.swift */,
 				BF00000000000000000000F4 /* RecognitionService.swift */,
+				BF00000000000000000000F5 /* RecognitionTestViewModel.swift */,
 			);
 			path = Recognition;
 			sourceTree = "<group>";
@@ -135,6 +140,7 @@
 				BF00000000000000000000C2 /* MockDeviceCardView.swift */,
 				BF00000000000000000000C3 /* CardView.swift */,
 				BF00000000000000000000C4 /* MockDeviceKitButton.swift */,
+				BF00000000000000000000F6 /* RecognitionTestView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -227,6 +233,8 @@
 				BF00000000000000000000E0 /* CatalogDatabase.swift in Sources */,
 				BF00000000000000000000E3 /* BrickognizeClient.swift in Sources */,
 				BF00000000000000000000E4 /* RecognitionService.swift in Sources */,
+				BF00000000000000000000E5 /* RecognitionTestViewModel.swift in Sources */,
+				BF00000000000000000000E6 /* RecognitionTestView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

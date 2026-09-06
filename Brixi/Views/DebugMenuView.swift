@@ -11,12 +11,24 @@ import SwiftUI
 
 struct DebugMenuView: View {
   @Binding var showDebugMenu: Bool
+  @Binding var showRecognitionTest: Bool
 
   var body: some View {
     HStack {
       Spacer()
       VStack {
         Spacer()
+        Button {
+          showRecognitionTest = true
+        } label: {
+          Image(systemName: "viewfinder")
+            .foregroundStyle(.white)
+            .padding()
+            .background(.secondary)
+            .clipShape(Circle())
+            .shadow(radius: 4)
+        }
+        .accessibilityIdentifier("recognition_test_button")
         Button {
           showDebugMenu = true
         } label: {

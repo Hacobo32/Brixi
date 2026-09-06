@@ -12,8 +12,10 @@
 import Foundation
 
 struct BrickognizeSearchResult: Decodable {
-  let listingId: String
-  let boundingBox: BrickognizeBoundingBox
+  // Optional defensively: every response we've seen includes both, but
+  // neither is documented as required in the OpenAPI spec.
+  let listingId: String?
+  let boundingBox: BrickognizeBoundingBox?
   let items: [BrickognizeItem]
   let colors: [BrickognizeColor]?
 
@@ -70,9 +72,26 @@ struct BrickognizeColor: Decodable {
 }
 
 final class BrickognizeClient {
-  enum ClientError: Error {
+  enum ClientError: Error, LocalizedError {
     case invalidResponse
+    case rateLimited
     case httpError(status: Int, body: String)
+    case decodingFailed
+
+    var errorDescription: String? {
+      switch self {
+      case .invalidResponse:
+        return "Brickognize returned an unexpected response."
+      case .rateLimited:
+        // Confirmed with the maintainer: 5 requests/second per IP, no
+        // usage quota -- see docs/rebrickable-brickognize-feasibility.md.
+        return "Too many requests to Brickognize -- slow down and try again."
+      case .httpError(let status, _):
+        return "Brickognize request failed (HTTP \(status))."
+      case .decodingFailed:
+        return "Couldn't parse the Brickognize response."
+      }
+    }
   }
 
   private let baseURL = URL(string: "https://api.brickognize.com")!
@@ -100,9 +119,16 @@ final class BrickognizeClient {
       throw ClientError.invalidResponse
     }
     guard (200..<300).contains(http.statusCode) else {
+      if http.statusCode == 429 {
+        throw ClientError.rateLimited
+      }
       throw ClientError.httpError(status: http.statusCode, body: String(data: data, encoding: .utf8) ?? "")
     }
-    return try JSONDecoder().decode(BrickognizeSearchResult.self, from: data)
+    do {
+      return try JSONDecoder().decode(BrickognizeSearchResult.self, from: data)
+    } catch {
+      throw ClientError.decodingFailed
+    }
   }
 
   private func multipartBody(imageData: Data, fileName: String, boundary: String) -> Data {
