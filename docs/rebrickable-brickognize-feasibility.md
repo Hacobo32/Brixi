@@ -319,12 +319,26 @@ Done:
   Rebrickable is clear for commercial use with attribution; Brickognize
   needs an explicit maintainer sign-off before a real launch, informal
   footing is fine for now.
+- **Confirmed the app builds successfully in Xcode**, on a new dev
+  machine (the old 2015 MacBook Air couldn't run a compatible Xcode
+  version at all). Fixed `IPHONEOS_DEPLOYMENT_TARGET` along the way: it
+  was 16.0, but the DAT SDK's compiled binaries require 17.2 -- confirmed
+  precisely via `otool -l` on the actual `MWDATCore.xcframework` binary
+  (`LC_BUILD_VERSION` / `minos 17.2`), not guessed. Final state: build
+  succeeds with zero warnings.
+- Discovered the DAT SDK's bundled README documents the Wearables MCP
+  endpoint precisely: `https://mcp.developer.meta.com/wearables`,
+  unauthenticated, exposing `search_dat_docs`; a static fallback exists at
+  `https://wearables.developer.meta.com/llms.txt?full=true`. Not yet
+  wired into any local tooling -- optional, only useful if/when doing
+  local AI-assisted coding on this project outside this session.
 
 Not yet started:
-- Confirm the app actually builds in Xcode. Blocked on hardware: the
-  project's format requires Xcode 16, which needs macOS Sonoma+, which
-  isn't available on the current dev machine (2015 MacBook Air, capped at
-  Monterey). Waiting on a new Mac to arrive.
+- **Reconcile with the sibling `claude/brixi-lego-finder-72ujxh` branch**,
+  which independently built its own Brickognize integration (with better
+  HTTP-429 handling and a working DEBUG test UI, but no catalog database
+  at all). Explicitly deferred by request -- decide how to merge before
+  more recognition-layer work happens on either branch.
 - Add a scheduled refresh job for the bundled catalog rather than the
   current manual one-shot build script.
 - Design the "confirm from a shortlist" UX for decorated/niche pieces,
