@@ -243,6 +243,32 @@ pattern, not a statistically rigorous benchmark.
    score — the model can be ambiguous among close color variants of the
    same physical mold.
 
+### First full in-app validation (post-reconciliation)
+
+The earlier results above came from direct `curl` calls to the API. Once
+`RecognitionTestView` existed, the same pipeline was exercised live in the
+Simulator -- photo picker -> `RecognitionService` -> `BrickognizeClient` ->
+confidence gate -> catalog-resolved display -- across a few single-piece
+photos:
+
+- A decorated minifig torso (Superman) matched at 0.90, correctly
+  displaying the full Rebrickable catalog name ("Torso Super Hero Costume
+  with Dark Blue Muscles, Red and Yellow Superman 'S' Logo...") rather than
+  Brickognize's raw label -- confirms `CatalogDatabase.part(partNum:)`
+  resolution works end-to-end, not just in isolation.
+- A small figure (a Marvel-themed cat piece) matched at 0.79, also with a
+  correctly resolved, specific catalog name.
+- A different decorated minifig returned zero candidates (`.notFound`) --
+  a genuine miss, consistent with decorated pieces being the weaker case.
+- **The predicted color name is unreliable independent of item-ID
+  accuracy** -- both confident matches above displayed a color that
+  didn't match the piece in the photo (e.g. "Light Gray" for a visibly
+  blue/red torso). This is Brickognize's own color-prediction signal, not
+  a resolution bug on our side; color and item identity are separate
+  signals with different reliability, and color is the weaker one. If
+  color is ever surfaced prominently in the real UI, it likely needs its
+  own (lower) trust bar than the item match itself.
+
 ### Implication for Brixi's design
 
 - Treat "found a piece" and "identified exactly which piece" as two
