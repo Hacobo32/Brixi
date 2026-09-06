@@ -333,12 +333,19 @@ Done:
   wired into any local tooling -- optional, only useful if/when doing
   local AI-assisted coding on this project outside this session.
 
+Done (continued):
+- **Reconciled with the sibling `claude/brixi-lego-finder-72ujxh`
+  branch.** Ported its two advantages into this branch, adapted to use
+  `RecognitionService` (catalog-integrated) instead of its bare client:
+  explicit HTTP-429 handling + `LocalizedError` messages in
+  `BrickognizeClient`, and a working DEBUG test UI
+  (`RecognitionTestView`/`RecognitionTestViewModel`, PhotosPicker-based,
+  reachable from a second debug-menu button) that shows the resolved
+  catalog name/image/color for a confident match. This branch's catalog
+  integration was the piece the other branch lacked, so the two no
+  longer need separate follow-up work.
+
 Not yet started:
-- **Reconcile with the sibling `claude/brixi-lego-finder-72ujxh` branch**,
-  which independently built its own Brickognize integration (with better
-  HTTP-429 handling and a working DEBUG test UI, but no catalog database
-  at all). Explicitly deferred by request -- decide how to merge before
-  more recognition-layer work happens on either branch.
 - Add a scheduled refresh job for the bundled catalog rather than the
   current manual one-shot build script.
 - Design the "confirm from a shortlist" UX for decorated/niche pieces,
