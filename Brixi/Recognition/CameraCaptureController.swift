@@ -16,6 +16,7 @@
 import Foundation
 import MWDATCamera
 import MWDATCore
+import os
 
 enum CameraCaptureError: Error, LocalizedError {
   case sessionFailed(String)
@@ -98,17 +99,26 @@ final class CameraCaptureController {
 
   private func waitForStreaming(_ stream: MWDATCamera.Stream) async throws {
     let bag = ListenerTokenBag()
+    let didResume = OSAllocatedUnfairLock(initialState: false)
     try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
-      var didResume = false
       stream.statePublisher.listen { state in
-        guard !didResume else { return }
         switch state {
         case .streaming:
-          didResume = true
+          let shouldResume = didResume.withLock { resumed in
+            guard !resumed else { return false }
+            resumed = true
+            return true
+          }
+          guard shouldResume else { return }
           bag.clear()
           continuation.resume()
         case .stopped:
-          didResume = true
+          let shouldResume = didResume.withLock { resumed in
+            guard !resumed else { return false }
+            resumed = true
+            return true
+          }
+          guard shouldResume else { return }
           bag.clear()
           continuation.resume(throwing: CameraCaptureError.streamFailed("Stream stopped before it started."))
         default:
@@ -121,18 +131,28 @@ final class CameraCaptureController {
 
   private func capturePhoto(from stream: MWDATCamera.Stream) async throws -> Data {
     let bag = ListenerTokenBag()
+    let didResume = OSAllocatedUnfairLock(initialState: false)
     return try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Data, Error>) in
-      var didResume = false
       stream.photoDataPublisher.listen { photoData in
-        guard !didResume else { return }
-        didResume = true
+        let shouldResume = didResume.withLock { resumed in
+          guard !resumed else { return false }
+          resumed = true
+          return true
+        }
+        guard shouldResume else { return }
         bag.clear()
         continuation.resume(returning: photoData.data)
       }.store(in: bag)
 
       guard stream.capturePhoto(format: .jpeg) else {
-        didResume = true
-        continuation.resume(throwing: CameraCaptureError.captureFailed)
+        let shouldResume = didResume.withLock { resumed in
+          guard !resumed else { return false }
+          resumed = true
+          return true
+        }
+        if shouldResume {
+          continuation.resume(throwing: CameraCaptureError.captureFailed)
+        }
         return
       }
     }
