@@ -8,6 +8,7 @@
 #if DEBUG
 
 import MWDATMockDevice
+import PhotosUI
 import SwiftUI
 
 struct MockDeviceCardView: View {
@@ -15,6 +16,7 @@ struct MockDeviceCardView: View {
   let onUnpairDevice: () -> Void
 
   @State private var expanded = true
+  @State private var photosPickerItem: PhotosPickerItem?
 
   var body: some View {
     CardView {
@@ -77,6 +79,29 @@ struct MockDeviceCardView: View {
             )
             .frame(height: 36)
           }
+
+          if viewModel.hasCapturedImage {
+            Text("Has captured image")
+              .font(.caption)
+              .foregroundStyle(.green)
+              .frame(maxWidth: .infinity, alignment: .leading)
+          }
+
+          PhotosPicker("Select Test Photo", selection: $photosPickerItem, matching: .images)
+            .onChange(of: photosPickerItem) { _, newItem in
+              Task {
+                guard let data = try? await newItem?.loadTransferable(type: Data.self) else { return }
+                let url = FileManager.default.temporaryDirectory
+                  .appendingPathComponent(UUID().uuidString)
+                  .appendingPathExtension("jpg")
+                do {
+                  try data.write(to: url)
+                  viewModel.selectImage(from: url)
+                } catch {
+                  // Best-effort debug tooling; nothing to recover from here.
+                }
+              }
+            }
         }
       }
       .padding()
