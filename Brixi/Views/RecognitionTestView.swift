@@ -48,6 +48,14 @@ struct RecognitionTestView: View {
             viewModel.identify()
           }
 
+          MockDeviceKitButton(
+            "Capture from Glasses",
+            style: .primary,
+            disabled: viewModel.isLoading
+          ) {
+            viewModel.captureFromGlasses()
+          }
+
           if viewModel.isLoading {
             ProgressView()
           }

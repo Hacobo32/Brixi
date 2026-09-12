@@ -12,6 +12,7 @@
 		BF0000000000000000000003 /* RegistrationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF0000000000000000000013 /* RegistrationView.swift */; };
 		BF0000000000000000000004 /* MWDATCore in Frameworks */ = {isa = PBXBuildFile; productRef = BF00000000000000000000B0 /* MWDATCore */; };
 		BF0000000000000000000005 /* MWDATMockDevice in Frameworks */ = {isa = PBXBuildFile; productRef = BF00000000000000000000B1 /* MWDATMockDevice */; };
+		BF0000000000000000000006 /* MWDATCamera in Frameworks */ = {isa = PBXBuildFile; productRef = BF00000000000000000000B2 /* MWDATCamera */; };
 		BF00000000000000000000D0 /* DebugMenuView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF00000000000000000000C0 /* DebugMenuView.swift */; };
 		BF00000000000000000000D1 /* MockDeviceKitView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF00000000000000000000C1 /* MockDeviceKitView.swift */; };
 		BF00000000000000000000D2 /* MockDeviceCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF00000000000000000000C2 /* MockDeviceCardView.swift */; };
@@ -26,6 +27,7 @@
 		BF00000000000000000000E4 /* RecognitionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF00000000000000000000F4 /* RecognitionService.swift */; };
 		BF00000000000000000000E5 /* RecognitionTestViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF00000000000000000000F5 /* RecognitionTestViewModel.swift */; };
 		BF00000000000000000000E6 /* RecognitionTestView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF00000000000000000000F6 /* RecognitionTestView.swift */; };
+		BF00000000000000000000E7 /* CameraCaptureController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF00000000000000000000F7 /* CameraCaptureController.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -48,6 +50,7 @@
 		BF00000000000000000000F4 /* RecognitionService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecognitionService.swift; sourceTree = "<group>"; };
 		BF00000000000000000000F5 /* RecognitionTestViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecognitionTestViewModel.swift; sourceTree = "<group>"; };
 		BF00000000000000000000F6 /* RecognitionTestView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecognitionTestView.swift; sourceTree = "<group>"; };
+		BF00000000000000000000F7 /* CameraCaptureController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraCaptureController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -57,6 +60,7 @@
 			files = (
 				BF0000000000000000000004 /* MWDATCore in Frameworks */,
 				BF0000000000000000000005 /* MWDATMockDevice in Frameworks */,
+				BF0000000000000000000006 /* MWDATCamera in Frameworks */,
 				BF00000000000000000000E2 /* libsqlite3.tbd in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -117,6 +121,7 @@
 				BF00000000000000000000F3 /* BrickognizeClient.swift */,
 				BF00000000000000000000F4 /* RecognitionService.swift */,
 				BF00000000000000000000F5 /* RecognitionTestViewModel.swift */,
+				BF00000000000000000000F7 /* CameraCaptureController.swift */,
 			);
 			path = Recognition;
 			sourceTree = "<group>";
@@ -164,6 +169,7 @@
 			packageProductDependencies = (
 				BF00000000000000000000B0 /* MWDATCore */,
 				BF00000000000000000000B1 /* MWDATMockDevice */,
+				BF00000000000000000000B2 /* MWDATCamera */,
 			);
 			productName = Brixi;
 			productReference = BF0000000000000000000010 /* Brixi.app */;
@@ -235,6 +241,7 @@
 				BF00000000000000000000E4 /* RecognitionService.swift in Sources */,
 				BF00000000000000000000E5 /* RecognitionTestViewModel.swift in Sources */,
 				BF00000000000000000000E6 /* RecognitionTestView.swift in Sources */,
+				BF00000000000000000000E7 /* CameraCaptureController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -377,6 +384,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = BF00000000000000000000A0 /* XCRemoteSwiftPackageReference "meta-wearables-dat-ios" */;
 			productName = MWDATMockDevice;
+		};
+		BF00000000000000000000B2 /* MWDATCamera */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = BF00000000000000000000A0 /* XCRemoteSwiftPackageReference "meta-wearables-dat-ios" */;
+			productName = MWDATCamera;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

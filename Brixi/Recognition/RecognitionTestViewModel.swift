@@ -20,6 +20,7 @@ final class RecognitionTestViewModel: ObservableObject {
   @Published var errorMessage: String?
 
   private let service: RecognitionService?
+  private let cameraCaptureController = CameraCaptureController()
 
   init() {
     do {
@@ -45,6 +46,27 @@ final class RecognitionTestViewModel: ObservableObject {
 
     Task {
       do {
+        outcome = try await service.recognize(imageData: imageData)
+      } catch {
+        errorMessage = error.localizedDescription
+      }
+      isLoading = false
+    }
+  }
+
+  /// Captures one photo from the glasses (or a Mock Device Kit feed) and
+  /// runs it straight through recognition -- the live-camera counterpart
+  /// to picking a photo from the library.
+  func captureFromGlasses() {
+    guard let service else { return }
+    isLoading = true
+    errorMessage = nil
+    outcome = nil
+
+    Task {
+      do {
+        let imageData = try await cameraCaptureController.captureOnePhoto()
+        selectedImageData = imageData
         outcome = try await service.recognize(imageData: imageData)
       } catch {
         errorMessage = error.localizedDescription
