@@ -371,14 +371,30 @@ Done (continued):
   integration was the piece the other branch lacked, so the two no
   longer need separate follow-up work.
 
+- **Wired real camera capture.** `Brixi/Recognition/CameraCaptureController.swift`
+  wraps the DAT SDK's session -> camera -> stream -> capture -> teardown
+  lifecycle behind a single async `captureOnePhoto() -> Data` call, feeding
+  straight into `RecognitionService`. The API was not guessed: pulled
+  directly from Meta's own `CameraAccess` sample app and its bundled
+  camera-streaming skill guide (cloned from the public
+  `facebook/meta-wearables-dat-ios` repo, since the docs website is
+  unreachable from this sandbox but GitHub isn't). `RecognitionTestView`
+  now has a "Capture from Glasses" button alongside the photo picker --
+  testable today via Mock Device Kit's phone-camera or video-file mock
+  feeds, without physical hardware.
+
 Not yet started:
 - Add a scheduled refresh job for the bundled catalog rather than the
   current manual one-shot build script.
 - Design the "confirm from a shortlist" UX for decorated/niche pieces,
   as a fallback to silent auto-identification.
-- Build the actual camera-capture call site -- nothing in the app yet
-  calls `RecognitionService.recognize(imageData:)`; that depends on how
-  images come from the Meta DAT camera feed, which hasn't been scoped.
+- Verify `CameraCaptureController` actually works end-to-end via Mock
+  Device Kit (pair a device, set a camera source, tap "Capture from
+  Glasses"), then eventually against real Ray-Ban Meta glasses.
+- Tune `StreamConfiguration` (currently `.raw` / `.medium` / 24fps, the
+  SDK doc's standard example) against real recognition accuracy --
+  higher resolution may help identify small parts, at some Bluetooth
+  bandwidth/quality cost.
 - Run a larger, structured recognition trial under real bin-sorting
   conditions (ideally through the actual glasses camera pipeline, not a
   phone photo) to get a real accuracy number before committing to the
