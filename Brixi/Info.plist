@@ -56,6 +56,8 @@
 	</array>
 	<key>NSBluetoothAlwaysUsageDescription</key>
 	<string>Needed to connect to Meta Wearables</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Needed to identify LEGO pieces from your glasses' camera</string>
 
 	<!-- Meta Wearables Device Access Toolkit configuration -->
 	<key>MWDAT</key>
