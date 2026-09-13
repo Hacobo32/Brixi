@@ -8,3 +8,6 @@ DerivedData/
 # Swift Package Manager
 .swiftpm/
 .build/
+
+# Secrets -- see Brixi/Config/Secrets.example.xcconfig
+Brixi/Config/Secrets.xcconfig

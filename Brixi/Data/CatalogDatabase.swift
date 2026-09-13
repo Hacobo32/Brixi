@@ -73,6 +73,30 @@ final class CatalogDatabase {
     }.first
   }
 
+  /// Local substring search over the bundled `sets` table, by set number or
+  /// name -- no network needed, since sets are fully bundled (see
+  /// docs/rebrickable-brickognize-feasibility.md, Part 1).
+  func searchSets(matching searchText: String, limit: Int = 25) -> [CatalogSet] {
+    let pattern = "%\(searchText)%"
+    let sql = """
+      SELECT set_num, name, year, theme_id, num_parts, img_url
+      FROM sets
+      WHERE set_num LIKE ? OR name LIKE ?
+      ORDER BY year DESC
+      LIMIT ?
+      """
+    return query(sql, bindings: [.text(pattern), .text(pattern), .int(limit)]) { stmt in
+      CatalogSet(
+        setNum: columnText(stmt, 0) ?? "",
+        name: columnText(stmt, 1) ?? "",
+        year: columnOptionalInt(stmt, 2),
+        themeId: columnOptionalInt(stmt, 3),
+        numParts: columnOptionalInt(stmt, 4),
+        imgURL: columnText(stmt, 5).flatMap(URL.init(string:))
+      )
+    }
+  }
+
   func part(partNum: String) -> CatalogPart? {
     let sql = "SELECT part_num, name, part_cat_id, part_material FROM parts WHERE part_num = ? LIMIT 1"
     return query(sql, bindings: [.text(partNum)]) { stmt in

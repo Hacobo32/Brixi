@@ -2,7 +2,9 @@
 // BrixiApp.swift
 //
 // Entry point. Configures the Meta Wearables Device Access Toolkit (DAT) SDK
-// at launch and hosts the registration + connection lifecycle screen.
+// at launch and hosts the main "pick a set, find its parts" flow. Glasses
+// registration/connection lives behind a toolbar button now, rather than
+// being the first screen -- that's dev-facing plumbing, not the product.
 //
 
 import MWDATCore
@@ -15,6 +17,13 @@ import MWDATMockDevice
 @main
 struct BrixiApp: App {
   @StateObject private var wearablesViewModel: WearablesViewModel
+  @StateObject private var buildStore = BuildProjectStore()
+  @State private var showRegistration = false
+
+  private let catalog: CatalogDatabase?
+  private let rebrickableClient: RebrickableClient?
+  private let setPickerViewModel: SetPickerViewModel
+
   #if DEBUG
   @State private var showDebugMenu = false
   @State private var showRecognitionTest = false
@@ -31,15 +40,29 @@ struct BrixiApp: App {
       #endif
     }
     self._wearablesViewModel = StateObject(wrappedValue: WearablesViewModel(wearables: Wearables.shared))
+
+    let catalog = try? CatalogDatabase()
+    self.catalog = catalog
+    self.rebrickableClient = RebrickableClient.fromInfoPlist()
+    self.setPickerViewModel = SetPickerViewModel(catalog: catalog)
   }
 
   var body: some Scene {
     WindowGroup {
-      RegistrationView(viewModel: wearablesViewModel)
+      SetPickerView(
+        viewModel: setPickerViewModel,
+        store: buildStore,
+        client: rebrickableClient,
+        catalog: catalog,
+        onConnectGlasses: { showRegistration = true }
+      )
         .onOpenURL { url in
           Task {
             _ = try? await Wearables.shared.handleUrl(url)
           }
+        }
+        .sheet(isPresented: $showRegistration) {
+          RegistrationView(viewModel: wearablesViewModel)
         }
         .alert("Something went wrong", isPresented: $wearablesViewModel.showError) {
           Button("OK") {

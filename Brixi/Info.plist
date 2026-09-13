@@ -59,6 +59,11 @@
 	<key>NSCameraUsageDescription</key>
 	<string>Needed to identify LEGO pieces from your glasses' camera</string>
 
+	<!-- Populated at build time from Brixi/Config/Secrets.xcconfig (gitignored --
+	     see Brixi/Config/Secrets.example.xcconfig). Empty if that file doesn't exist. -->
+	<key>RebrickableAPIKey</key>
+	<string>$(REBRICKABLE_API_KEY)</string>
+
 	<!-- Meta Wearables Device Access Toolkit configuration -->
 	<key>MWDAT</key>
 	<dict>

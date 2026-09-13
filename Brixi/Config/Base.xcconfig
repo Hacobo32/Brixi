@@ -1,0 +1,10 @@
+//
+// Base.xcconfig
+//
+// Set as the Brixi target's base configuration (Debug and Release) so
+// Secrets.xcconfig -- gitignored, see Secrets.example.xcconfig -- can inject
+// REBRICKABLE_API_KEY without that value ever being committed to git.
+// #include? (with the ?) makes the include optional: the project still
+// builds with an empty key if Secrets.xcconfig doesn't exist yet.
+
+#include? "Secrets.xcconfig"

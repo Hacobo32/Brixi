@@ -28,6 +28,13 @@
 		BF00000000000000000000E5 /* RecognitionTestViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF00000000000000000000F5 /* RecognitionTestViewModel.swift */; };
 		BF00000000000000000000E6 /* RecognitionTestView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF00000000000000000000F6 /* RecognitionTestView.swift */; };
 		BF00000000000000000000E7 /* CameraCaptureController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF00000000000000000000F7 /* CameraCaptureController.swift */; };
+		BF0000000000000000000110 /* RebrickableClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF0000000000000000000102 /* RebrickableClient.swift */; };
+		BF0000000000000000000111 /* BuildProject.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF0000000000000000000103 /* BuildProject.swift */; };
+		BF0000000000000000000112 /* BuildProjectStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF0000000000000000000104 /* BuildProjectStore.swift */; };
+		BF0000000000000000000113 /* SetPickerViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF0000000000000000000105 /* SetPickerViewModel.swift */; };
+		BF0000000000000000000114 /* BuildDetailViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF0000000000000000000106 /* BuildDetailViewModel.swift */; };
+		BF0000000000000000000115 /* SetPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF0000000000000000000107 /* SetPickerView.swift */; };
+		BF0000000000000000000116 /* BuildDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF0000000000000000000108 /* BuildDetailView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -51,6 +58,15 @@
 		BF00000000000000000000F5 /* RecognitionTestViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecognitionTestViewModel.swift; sourceTree = "<group>"; };
 		BF00000000000000000000F6 /* RecognitionTestView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecognitionTestView.swift; sourceTree = "<group>"; };
 		BF00000000000000000000F7 /* CameraCaptureController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraCaptureController.swift; sourceTree = "<group>"; };
+		BF0000000000000000000100 /* Base.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Base.xcconfig; sourceTree = "<group>"; };
+		BF0000000000000000000101 /* Secrets.example.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Secrets.example.xcconfig; sourceTree = "<group>"; };
+		BF0000000000000000000102 /* RebrickableClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RebrickableClient.swift; sourceTree = "<group>"; };
+		BF0000000000000000000103 /* BuildProject.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BuildProject.swift; sourceTree = "<group>"; };
+		BF0000000000000000000104 /* BuildProjectStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BuildProjectStore.swift; sourceTree = "<group>"; };
+		BF0000000000000000000105 /* SetPickerViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetPickerViewModel.swift; sourceTree = "<group>"; };
+		BF0000000000000000000106 /* BuildDetailViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BuildDetailViewModel.swift; sourceTree = "<group>"; };
+		BF0000000000000000000107 /* SetPickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetPickerView.swift; sourceTree = "<group>"; };
+		BF0000000000000000000108 /* BuildDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BuildDetailView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -100,10 +116,39 @@
 				BF0000000000000000000035 /* Views */,
 				BF0000000000000000000036 /* Data */,
 				BF0000000000000000000037 /* Recognition */,
+				BF0000000000000000000121 /* Network */,
+				BF0000000000000000000122 /* Models */,
+				BF0000000000000000000120 /* Config */,
 				BF0000000000000000000011 /* BrixiApp.swift */,
 				BF0000000000000000000014 /* Info.plist */,
 			);
 			path = Brixi;
+			sourceTree = "<group>";
+		};
+		BF0000000000000000000120 /* Config */ = {
+			isa = PBXGroup;
+			children = (
+				BF0000000000000000000100 /* Base.xcconfig */,
+				BF0000000000000000000101 /* Secrets.example.xcconfig */,
+			);
+			path = Config;
+			sourceTree = "<group>";
+		};
+		BF0000000000000000000121 /* Network */ = {
+			isa = PBXGroup;
+			children = (
+				BF0000000000000000000102 /* RebrickableClient.swift */,
+			);
+			path = Network;
+			sourceTree = "<group>";
+		};
+		BF0000000000000000000122 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				BF0000000000000000000103 /* BuildProject.swift */,
+				BF0000000000000000000104 /* BuildProjectStore.swift */,
+			);
+			path = Models;
 			sourceTree = "<group>";
 		};
 		BF0000000000000000000036 /* Data */ = {
@@ -132,6 +177,8 @@
 				BF0000000000000000000012 /* WearablesViewModel.swift */,
 				BF00000000000000000000C5 /* MockDeviceKitViewModel.swift */,
 				BF00000000000000000000C6 /* MockDeviceCardViewModel.swift */,
+				BF0000000000000000000105 /* SetPickerViewModel.swift */,
+				BF0000000000000000000106 /* BuildDetailViewModel.swift */,
 			);
 			path = ViewModels;
 			sourceTree = "<group>";
@@ -146,6 +193,8 @@
 				BF00000000000000000000C3 /* CardView.swift */,
 				BF00000000000000000000C4 /* MockDeviceKitButton.swift */,
 				BF00000000000000000000F6 /* RecognitionTestView.swift */,
+				BF0000000000000000000107 /* SetPickerView.swift */,
+				BF0000000000000000000108 /* BuildDetailView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -242,6 +291,13 @@
 				BF00000000000000000000E5 /* RecognitionTestViewModel.swift in Sources */,
 				BF00000000000000000000E6 /* RecognitionTestView.swift in Sources */,
 				BF00000000000000000000E7 /* CameraCaptureController.swift in Sources */,
+				BF0000000000000000000110 /* RebrickableClient.swift in Sources */,
+				BF0000000000000000000111 /* BuildProject.swift in Sources */,
+				BF0000000000000000000112 /* BuildProjectStore.swift in Sources */,
+				BF0000000000000000000113 /* SetPickerViewModel.swift in Sources */,
+				BF0000000000000000000114 /* BuildDetailViewModel.swift in Sources */,
+				BF0000000000000000000115 /* SetPickerView.swift in Sources */,
+				BF0000000000000000000116 /* BuildDetailView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -250,6 +306,7 @@
 /* Begin XCBuildConfiguration section */
 		BF0000000000000000000080 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = BF0000000000000000000100 /* Base.xcconfig */;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
@@ -272,6 +329,7 @@
 		};
 		BF0000000000000000000081 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = BF0000000000000000000100 /* Base.xcconfig */;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
