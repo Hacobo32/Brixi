@@ -102,10 +102,30 @@ struct MockDeviceCardView: View {
                 }
               }
             }
+
+          Menu {
+            Button("Front camera") { viewModel.setCameraFeed(.front) }
+            Button("Back camera") { viewModel.setCameraFeed(.back) }
+          } label: {
+            Text("Camera feed: \(cameraFeedLabel)")
+          }
         }
       }
       .padding()
     }
+    .alert("Camera access required", isPresented: $viewModel.showCameraPermissionAlert) {
+      Button("Open Settings") {
+        viewModel.openSettings()
+      }
+      Button("Cancel", role: .cancel) {}
+    } message: {
+      Text("Camera access was denied. Enable it in Settings to use the camera feed.")
+    }
+  }
+
+  private var cameraFeedLabel: String {
+    guard let source = viewModel.cameraSource else { return "None" }
+    return source == .front ? "Front camera" : "Back camera"
   }
 }
 

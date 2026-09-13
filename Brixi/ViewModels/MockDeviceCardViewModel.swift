@@ -8,9 +8,11 @@
 
 #if DEBUG
 
+import AVFoundation
 import Combine
 import Foundation
 import MWDATMockDevice
+import UIKit
 
 @MainActor
 final class MockDeviceCardViewModel: ObservableObject {
@@ -19,6 +21,8 @@ final class MockDeviceCardViewModel: ObservableObject {
   @Published var isDonned: Bool = false
   @Published var isUnfolded: Bool = false
   @Published var hasCapturedImage: Bool = false
+  @Published var cameraSource: CameraFacing?
+  @Published var showCameraPermissionAlert: Bool = false
 
   init(device: MockGlasses) {
     self.device = device
@@ -66,6 +70,32 @@ final class MockDeviceCardViewModel: ObservableObject {
   func selectImage(from url: URL) {
     device.services.camera.setCapturedImage(fileURL: url)
     hasCapturedImage = true
+  }
+
+  /// Feeds the mock camera's live stream from the phone's own front/back
+  /// camera -- without a feed configured, `stream.start()` has nothing to
+  /// stream and the stream immediately reports `.stopped`.
+  func setCameraFeed(_ facing: CameraFacing) {
+    Task {
+      let status = AVCaptureDevice.authorizationStatus(for: .video)
+      if status == .denied || status == .restricted {
+        showCameraPermissionAlert = true
+        return
+      }
+      let granted = await AVCaptureDevice.requestAccess(for: .video)
+      guard granted else {
+        showCameraPermissionAlert = true
+        return
+      }
+      device.services.camera.setCameraFeed(cameraFacing: facing)
+      cameraSource = facing
+    }
+  }
+
+  func openSettings() {
+    if let url = URL(string: UIApplication.openSettingsURLString) {
+      UIApplication.shared.open(url)
+    }
   }
 }
 
