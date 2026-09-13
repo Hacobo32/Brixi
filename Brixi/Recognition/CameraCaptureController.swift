@@ -23,6 +23,7 @@ enum CameraCaptureError: Error, LocalizedError {
   case streamFailed(String)
   case permissionDenied
   case captureFailed
+  case noActiveDevice
 
   var errorDescription: String? {
     switch self {
@@ -34,6 +35,8 @@ enum CameraCaptureError: Error, LocalizedError {
       return "Camera permission was denied."
     case .captureFailed:
       return "Couldn't capture a photo. Try again."
+    case .noActiveDevice:
+      return "No glasses are connected. Put them on and try again."
     }
   }
 }
@@ -47,9 +50,14 @@ final class CameraCaptureController {
   }
 
   func captureOnePhoto() async throws -> Data {
+    let selector = AutoDeviceSelector(wearables: wearables)
+    // AutoDeviceSelector only resolves an active device for a selector that's
+    // actually being observed -- a freshly created, never-subscribed instance
+    // sees no eligible device even when one is already donned and connected.
+    try await waitForActiveDevice(selector)
+
     let session: DeviceSession
     do {
-      let selector = AutoDeviceSelector(wearables: wearables)
       session = try wearables.createSession(deviceSelector: selector)
       try session.start()
     } catch {
@@ -73,6 +81,33 @@ final class CameraCaptureController {
     let stream = camera.stream
     try await waitForStreaming(stream)
     return try await capturePhoto(from: stream)
+  }
+
+  // MARK: - Device
+
+  /// Waits for `selector` to report an active device, since AutoDeviceSelector
+  /// only resolves one for a selector that's being observed. Bounded to a few
+  /// seconds -- a one-shot capture shouldn't hang forever if no glasses (mock
+  /// or real) are actually connected.
+  private func waitForActiveDevice(_ selector: AutoDeviceSelector, timeout: Duration = .seconds(5)) async throws {
+    let found = await withTaskGroup(of: Bool.self) { group in
+      group.addTask {
+        for await deviceId in selector.activeDeviceStream() {
+          if deviceId != nil { return true }
+        }
+        return false
+      }
+      group.addTask {
+        try? await Task.sleep(for: timeout)
+        return false
+      }
+      let result = await group.next() ?? false
+      group.cancelAll()
+      return result
+    }
+    guard found else {
+      throw CameraCaptureError.noActiveDevice
+    }
   }
 
   // MARK: - Session

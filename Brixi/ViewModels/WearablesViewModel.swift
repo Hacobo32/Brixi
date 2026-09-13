@@ -20,21 +20,35 @@ import SwiftUI
 final class WearablesViewModel: ObservableObject {
   @Published var registrationState: RegistrationState
   @Published var sessionState: DeviceSessionState?
+  @Published var hasActiveDevice: Bool = false
   @Published var showError = false
   @Published var errorMessage = ""
 
   private var registrationTask: Task<Void, Never>?
   private var sessionTask: Task<Void, Never>?
+  private var deviceMonitorTask: Task<Void, Never>?
   private var deviceSession: DeviceSession?
   private let wearables: WearablesInterface
+  // Held for the view model's lifetime and subscribed to immediately below --
+  // AutoDeviceSelector only resolves an active device for a selector that's
+  // actually being observed, so a fresh, never-subscribed instance created
+  // right before createSession() sees no eligible device even once one exists.
+  private let deviceSelector: AutoDeviceSelector
 
   init(wearables: WearablesInterface) {
     self.wearables = wearables
     self.registrationState = wearables.registrationState
+    self.deviceSelector = AutoDeviceSelector(wearables: wearables)
 
     registrationTask = Task {
       for await state in wearables.registrationStateStream() {
         self.registrationState = state
+      }
+    }
+
+    deviceMonitorTask = Task {
+      for await deviceId in deviceSelector.activeDeviceStream() {
+        self.hasActiveDevice = deviceId != nil
       }
     }
   }
@@ -42,6 +56,7 @@ final class WearablesViewModel: ObservableObject {
   deinit {
     registrationTask?.cancel()
     sessionTask?.cancel()
+    deviceMonitorTask?.cancel()
   }
 
   // MARK: - Registration
@@ -72,8 +87,7 @@ final class WearablesViewModel: ObservableObject {
   func startSession() {
     guard deviceSession == nil else { return }
     do {
-      let selector = AutoDeviceSelector(wearables: wearables)
-      let session = try wearables.createSession(deviceSelector: selector)
+      let session = try wearables.createSession(deviceSelector: deviceSelector)
       try session.start()
       deviceSession = session
 
