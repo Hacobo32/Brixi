@@ -121,6 +121,24 @@ final class CatalogDatabase {
     }.first
   }
 
+  /// `partNum` plus every part_num linked to it via `part_relationships`
+  /// (print/mold variants) -- so a recognized SKU can match a needed line
+  /// even when they're not byte-identical. See the empirical testing
+  /// findings in docs/rebrickable-brickognize-feasibility.md: exact-SKU
+  /// recognition is unreliable for decorated/niche pieces, which is exactly
+  /// what this table collapses.
+  func partFamily(partNum: String) -> Set<String> {
+    let sql = "SELECT child_part_num, parent_part_num FROM part_relationships WHERE child_part_num = ? OR parent_part_num = ?"
+    var family: Set<String> = [partNum]
+    for (child, parent) in query(sql, bindings: [.text(partNum), .text(partNum)], map: { stmt in
+      (columnText(stmt, 0) ?? "", columnText(stmt, 1) ?? "")
+    }) {
+      family.insert(child)
+      family.insert(parent)
+    }
+    return family
+  }
+
   func colorName(colorId: Int) -> String? {
     let sql = "SELECT name FROM colors WHERE id = ? LIMIT 1"
     return query(sql, bindings: [.int(colorId)]) { stmt in columnText(stmt, 0) ?? "" }.first

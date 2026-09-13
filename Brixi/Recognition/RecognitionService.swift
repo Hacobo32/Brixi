@@ -17,6 +17,7 @@ struct RecognizedPiece {
   let catalogPart: CatalogPart?
   let catalogSet: CatalogSet?
   let catalogMinifig: CatalogMinifig?
+  let colorId: Int?
   let colorName: String?
   let imageURL: URL?
 }
@@ -93,6 +94,7 @@ final class RecognitionService {
       catalogPart: catalogPart,
       catalogSet: catalogSet,
       catalogMinifig: catalogMinifig,
+      colorId: colorId,
       colorName: resolvedColorName,
       imageURL: imageURL
     )
