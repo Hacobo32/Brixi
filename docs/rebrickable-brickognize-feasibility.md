@@ -383,14 +383,45 @@ Done (continued):
   testable today via Mock Device Kit's phone-camera or video-file mock
   feeds, without physical hardware.
 
+Done (continued):
+- **Verified `CameraCaptureController` end-to-end via Mock Device Kit.**
+  Paired a mock device, configured a captured-image resource on it
+  (`MockDeviceCardViewModel.selectImage(from:)` ->
+  `MockGlasses.services.camera.setCapturedImage(fileURL:)`) and a live
+  camera feed from the phone's own camera (`setCameraFeed(_:)` ->
+  `setCameraFeed(cameraFacing:)`), then confirmed a real "Capture from
+  Glasses" tap ran the full session -> stream -> capture -> Brickognize ->
+  catalog-resolved-match pipeline (a LEGO cat piece matched and resolved
+  to its full Rebrickable name, same as the existing photo-picker path).
+  Debug UI for both controls didn't exist yet -- added to
+  `MockDeviceCardView`/`MockDeviceCardViewModel`, modeled on the same
+  controls in Meta's `CameraAccess` sample.
+- **Fixed a real bug found by this verification, not by inspection:**
+  `AutoDeviceSelector` only resolves an active device for a selector
+  that is actually being observed via `activeDeviceStream()` -- a
+  fresh, never-subscribed selector created immediately before
+  `createSession()` reports "no eligible device" even when one is
+  donned and connected, regardless of how long it's been in that state.
+  Reproduced against a fully powered/donned/unfolded mock device on
+  both `CameraCaptureController` and the pre-existing
+  `WearablesViewModel.startSession()`, which failed identically --
+  narrowing it to the shared selector-creation pattern, not mock device
+  state. Fixed both to hold/subscribe their selector before ever
+  calling `createSession()`, matching Meta's own sample.
+- **Fixed a hard crash surfaced by the same verification:** calling
+  `AVCaptureDevice.requestAccess(for: .video)` (needed for the new
+  phone-camera mock feed control) with no `NSCameraUsageDescription` in
+  `Info.plist` terminates the app immediately (`__abort_with_payload`)
+  -- added the missing key.
+
 Not yet started:
 - Add a scheduled refresh job for the bundled catalog rather than the
   current manual one-shot build script.
 - Design the "confirm from a shortlist" UX for decorated/niche pieces,
   as a fallback to silent auto-identification.
-- Verify `CameraCaptureController` actually works end-to-end via Mock
-  Device Kit (pair a device, set a camera source, tap "Capture from
-  Glasses"), then eventually against real Ray-Ban Meta glasses.
+- Test `CameraCaptureController` against real physical Ray-Ban Meta
+  glasses (Mock Device Kit verification above only proves the SDK
+  integration and app-side logic, not real Bluetooth/hardware behavior).
 - Tune `StreamConfiguration` (currently `.raw` / `.medium` / 24fps, the
   SDK doc's standard example) against real recognition accuracy --
   higher resolution may help identify small parts, at some Bluetooth
