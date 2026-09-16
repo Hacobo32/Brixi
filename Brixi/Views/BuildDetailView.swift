@@ -12,8 +12,23 @@ import SwiftUI
 
 struct BuildDetailView: View {
   @StateObject var viewModel: BuildDetailViewModel
+  let onSwitchBuild: () -> Void
 
   var body: some View {
+    NavigationStack {
+      content
+        .navigationTitle(viewModel.setName)
+        .toolbar {
+          ToolbarItem(placement: .topBarTrailing) {
+            Button("Switch Build", action: onSwitchBuild)
+          }
+        }
+        .onAppear { viewModel.loadIfNeeded() }
+    }
+  }
+
+  @ViewBuilder
+  private var content: some View {
     Group {
       if let build = viewModel.build {
         List {
@@ -64,8 +79,6 @@ struct BuildDetailView: View {
           .padding()
       }
     }
-    .navigationTitle(viewModel.setName)
-    .onAppear { viewModel.loadIfNeeded() }
   }
 
   @ViewBuilder
