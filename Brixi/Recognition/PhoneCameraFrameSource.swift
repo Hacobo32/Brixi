@@ -111,13 +111,8 @@ final class PhoneCameraFrameSource: NSObject, FrameSource, @unchecked Sendable {
 
     session.sessionPreset = .photo
 
-    // Falls back to the front camera when there's no back one -- the
-    // Simulator only exposes a front-facing camera (via the Mac's own
-    // webcam passthrough), the same constraint we hit testing Mock Device
-    // Kit's camera feed earlier.
     guard
-      let device = AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: .back)
-        ?? AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: .front),
+      let device = Self.preferredCameraDevice(),
       let input = try? AVCaptureDeviceInput(device: device),
       session.canAddInput(input)
     else {
@@ -129,6 +124,17 @@ final class PhoneCameraFrameSource: NSObject, FrameSource, @unchecked Sendable {
       throw PhoneCameraError.configurationFailed
     }
     session.addOutput(photoOutput)
+  }
+
+  /// Back camera, then front, then whatever the system reports as the
+  /// default video device regardless of type -- the Simulator's own
+  /// camera (via the Mac's webcam passthrough) doesn't self-report as
+  /// .builtInWideAngleCamera the way a real device's cameras do, so the
+  /// specific-type lookups alone return nil there.
+  private static func preferredCameraDevice() -> AVCaptureDevice? {
+    AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: .back)
+      ?? AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: .front)
+      ?? AVCaptureDevice.default(for: .video)
   }
 }
 
