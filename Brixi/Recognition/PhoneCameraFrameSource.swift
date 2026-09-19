@@ -128,7 +128,7 @@ final class PhoneCameraFrameSource: NSObject, FrameSource, @unchecked Sendable {
   }
 }
 
-extension PhoneCameraFrameSource: AVCapturePhotoOutputDelegate {
+extension PhoneCameraFrameSource: AVCapturePhotoCaptureDelegate {
   func photoOutput(_ output: AVCapturePhotoOutput, didFinishProcessingPhoto photo: AVCapturePhoto, error: Error?) {
     let continuation = state.withLock { state -> CheckedContinuation<Data, Error>? in
       let pending = state.pendingCapture

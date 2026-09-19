@@ -22,8 +22,13 @@ protocol FrameSource {
 final class GlassesFrameSource: FrameSource {
   private let cameraController: CameraCaptureController
 
-  init(cameraController: CameraCaptureController = CameraCaptureController()) {
-    self.cameraController = cameraController
+  // The default is built inside the initializer body, not as a default
+  // parameter value -- a default parameter value calling a @MainActor
+  // initializer isn't treated as isolated the same way a stored property
+  // or in-body call is, and errors as "main actor-isolated initializer in
+  // a synchronous nonisolated context".
+  init(cameraController: CameraCaptureController? = nil) {
+    self.cameraController = cameraController ?? CameraCaptureController()
   }
 
   func captureOneFrame() async throws -> Data {
