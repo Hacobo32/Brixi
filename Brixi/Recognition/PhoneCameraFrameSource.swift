@@ -107,8 +107,13 @@ final class PhoneCameraFrameSource: NSObject, FrameSource, @unchecked Sendable {
 
     session.sessionPreset = .photo
 
+    // Falls back to the front camera when there's no back one -- the
+    // Simulator only exposes a front-facing camera (via the Mac's own
+    // webcam passthrough), the same constraint we hit testing Mock Device
+    // Kit's camera feed earlier.
     guard
-      let device = AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: .back),
+      let device = AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: .back)
+        ?? AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: .front),
       let input = try? AVCaptureDeviceInput(device: device),
       session.canAddInput(input)
     else {
