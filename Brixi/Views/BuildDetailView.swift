@@ -3,9 +3,10 @@
 //
 // The needed-parts checklist for one set: fetches the set's part list on
 // first open (via RebrickableClient), then persists found/not-found
-// progress locally as pieces get located in the bin. "Scan for Parts" runs
-// a photo through the same camera-capture/recognition pipeline verified in
-// RecognitionTestView, checked against this set's needed-parts list.
+// progress locally as pieces get located in the bin. Scanning works with
+// just the phone camera (the phone-first product decision) -- glasses are
+// a second, additional path via the same recognition/match pipeline, not a
+// requirement.
 //
 
 import SwiftUI
@@ -13,6 +14,8 @@ import SwiftUI
 struct BuildDetailView: View {
   @StateObject var viewModel: BuildDetailViewModel
   let onSwitchBuild: () -> Void
+
+  @State private var showPhoneCamera = false
 
   var body: some View {
     NavigationStack {
@@ -24,6 +27,16 @@ struct BuildDetailView: View {
           }
         }
         .onAppear { viewModel.loadIfNeeded() }
+        .fullScreenCover(isPresented: $showPhoneCamera) {
+          PhoneCameraCaptureView(
+            frameSource: viewModel.phoneCameraSource,
+            onCapture: { data in
+              showPhoneCamera = false
+              viewModel.handlePhoneCameraCapture(data)
+            },
+            onCancel: { showPhoneCamera = false }
+          )
+        }
     }
   }
 
@@ -45,7 +58,14 @@ struct BuildDetailView: View {
               .foregroundStyle(.secondary)
 
             Button {
-              viewModel.scanForPart()
+              showPhoneCamera = true
+            } label: {
+              Label("Scan with Phone Camera", systemImage: "camera")
+            }
+            .disabled(viewModel.isScanning)
+
+            Button {
+              viewModel.scanWithGlasses()
             } label: {
               if viewModel.isScanning {
                 HStack {
@@ -53,7 +73,7 @@ struct BuildDetailView: View {
                   Text("Scanning…")
                 }
               } else {
-                Label("Scan for Parts", systemImage: "eyeglasses")
+                Label("Scan with Glasses", systemImage: "eyeglasses")
               }
             }
             .disabled(viewModel.isScanning)

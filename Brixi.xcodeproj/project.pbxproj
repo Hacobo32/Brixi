@@ -35,6 +35,10 @@
 		BF0000000000000000000114 /* BuildDetailViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF0000000000000000000106 /* BuildDetailViewModel.swift */; };
 		BF0000000000000000000115 /* SetPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF0000000000000000000107 /* SetPickerView.swift */; };
 		BF0000000000000000000116 /* BuildDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF0000000000000000000108 /* BuildDetailView.swift */; };
+		BF0000000000000000000140 /* FrameSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF0000000000000000000130 /* FrameSource.swift */; };
+		BF0000000000000000000141 /* PhoneCameraFrameSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF0000000000000000000131 /* PhoneCameraFrameSource.swift */; };
+		BF0000000000000000000142 /* CameraPreviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF0000000000000000000132 /* CameraPreviewView.swift */; };
+		BF0000000000000000000143 /* PhoneCameraCaptureView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF0000000000000000000133 /* PhoneCameraCaptureView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -67,6 +71,10 @@
 		BF0000000000000000000106 /* BuildDetailViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BuildDetailViewModel.swift; sourceTree = "<group>"; };
 		BF0000000000000000000107 /* SetPickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetPickerView.swift; sourceTree = "<group>"; };
 		BF0000000000000000000108 /* BuildDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BuildDetailView.swift; sourceTree = "<group>"; };
+		BF0000000000000000000130 /* FrameSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FrameSource.swift; sourceTree = "<group>"; };
+		BF0000000000000000000131 /* PhoneCameraFrameSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhoneCameraFrameSource.swift; sourceTree = "<group>"; };
+		BF0000000000000000000132 /* CameraPreviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraPreviewView.swift; sourceTree = "<group>"; };
+		BF0000000000000000000133 /* PhoneCameraCaptureView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhoneCameraCaptureView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -167,6 +175,8 @@
 				BF00000000000000000000F4 /* RecognitionService.swift */,
 				BF00000000000000000000F5 /* RecognitionTestViewModel.swift */,
 				BF00000000000000000000F7 /* CameraCaptureController.swift */,
+				BF0000000000000000000130 /* FrameSource.swift */,
+				BF0000000000000000000131 /* PhoneCameraFrameSource.swift */,
 			);
 			path = Recognition;
 			sourceTree = "<group>";
@@ -195,6 +205,8 @@
 				BF00000000000000000000F6 /* RecognitionTestView.swift */,
 				BF0000000000000000000107 /* SetPickerView.swift */,
 				BF0000000000000000000108 /* BuildDetailView.swift */,
+				BF0000000000000000000132 /* CameraPreviewView.swift */,
+				BF0000000000000000000133 /* PhoneCameraCaptureView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -298,6 +310,10 @@
 				BF0000000000000000000114 /* BuildDetailViewModel.swift in Sources */,
 				BF0000000000000000000115 /* SetPickerView.swift in Sources */,
 				BF0000000000000000000116 /* BuildDetailView.swift in Sources */,
+				BF0000000000000000000140 /* FrameSource.swift in Sources */,
+				BF0000000000000000000141 /* PhoneCameraFrameSource.swift in Sources */,
+				BF0000000000000000000142 /* CameraPreviewView.swift in Sources */,
+				BF0000000000000000000143 /* PhoneCameraCaptureView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

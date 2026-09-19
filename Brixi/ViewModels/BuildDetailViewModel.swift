@@ -36,12 +36,17 @@ final class BuildDetailViewModel: ObservableObject {
 
   let setName: String
 
+  /// Owned here (not just constructed on demand) so PhoneCameraCaptureView
+  /// can bind its live preview to the same session this view model will
+  /// capture from.
+  let phoneCameraSource = PhoneCameraFrameSource()
+
   private let setNum: String
   private let setImageURL: URL?
   private let store: BuildProjectStore
   private let client: RebrickableClient?
   private let catalog: CatalogDatabase?
-  private let cameraController = CameraCaptureController()
+  private let glassesFrameSource = GlassesFrameSource()
   private let recognitionService: RecognitionService?
 
   init(
@@ -90,28 +95,49 @@ final class BuildDetailViewModel: ObservableObject {
     build = store.build(setNum: setNum)
   }
 
-  /// Captures one photo from the glasses (or a Mock Device Kit feed),
-  /// recognizes it, and checks the result against this set's needed-parts
-  /// list -- the same CameraCaptureController/RecognitionService pipeline
-  /// already verified in RecognitionTestViewModel, reused here instead of
-  /// duplicated.
-  func scanForPart() {
-    guard let recognitionService else {
-      errorMessage = "Recognition isn't available -- the local catalog failed to load."
-      return
-    }
+  /// Captures one photo from the glasses (or a Mock Device Kit feed) and
+  /// runs it through the shared recognition/match path. Glasses are an
+  /// additional path alongside the phone camera, not a requirement -- see
+  /// handlePhoneCameraCapture(_:) for the phone-first default.
+  func scanWithGlasses() {
     isScanning = true
     errorMessage = nil
     scanResult = nil
     Task {
       do {
-        let imageData = try await cameraController.captureOnePhoto()
-        let outcome = try await recognitionService.recognize(imageData: imageData)
-        scanResult = evaluate(outcome)
+        let imageData = try await glassesFrameSource.captureOneFrame()
+        await runRecognition(on: imageData)
       } catch {
         errorMessage = error.localizedDescription
       }
       isScanning = false
+    }
+  }
+
+  /// Called by PhoneCameraCaptureView once it has a captured frame -- that
+  /// view owns the live preview/shutter UI, so by the time this runs the
+  /// frame already exists; this just runs it through the same
+  /// recognition/match path scanWithGlasses() uses.
+  func handlePhoneCameraCapture(_ imageData: Data) {
+    isScanning = true
+    errorMessage = nil
+    scanResult = nil
+    Task {
+      await runRecognition(on: imageData)
+      isScanning = false
+    }
+  }
+
+  private func runRecognition(on imageData: Data) async {
+    guard let recognitionService else {
+      errorMessage = "Recognition isn't available -- the local catalog failed to load."
+      return
+    }
+    do {
+      let outcome = try await recognitionService.recognize(imageData: imageData)
+      scanResult = evaluate(outcome)
+    } catch {
+      errorMessage = error.localizedDescription
     }
   }
 
