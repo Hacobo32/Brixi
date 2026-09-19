@@ -9,7 +9,11 @@
 // source is active.
 //
 
-import AVFoundation
+// AVFoundation predates Swift's Sendable annotations; @preconcurrency treats
+// its unmarked types (AVCaptureSession, AVCapturePhotoOutput, etc.) as
+// implicitly safe across the closures below, instead of warning on every
+// capture of them.
+@preconcurrency import AVFoundation
 import Foundation
 import os
 
