@@ -64,24 +64,45 @@ struct SetPickerView: View {
   }
 
   private func buildRow(_ build: BuildProject) -> some View {
-    VStack(alignment: .leading, spacing: 4) {
-      Text(build.setName)
-        .font(.headline)
-      Text("\(build.setNum) · \(build.totalFound)/\(build.totalNeeded) parts found")
-        .font(.caption)
-        .foregroundStyle(.secondary)
+    HStack(spacing: 12) {
+      setThumbnail(build.setImageURL)
+      VStack(alignment: .leading, spacing: 4) {
+        Text(build.setName)
+          .font(.headline)
+        Text("\(build.setNum) · \(build.totalFound)/\(build.totalNeeded) parts found")
+          .font(.caption)
+          .foregroundStyle(.secondary)
+      }
     }
     .foregroundStyle(.primary)
   }
 
   private func setRow(_ set: CatalogSet) -> some View {
-    VStack(alignment: .leading, spacing: 4) {
-      Text(set.name)
-        .font(.headline)
-      Text(set.setNum)
-        .font(.caption)
-        .foregroundStyle(.secondary)
+    HStack(spacing: 12) {
+      setThumbnail(set.imgURL)
+      VStack(alignment: .leading, spacing: 4) {
+        Text(set.name)
+          .font(.headline)
+        Text(set.setNum)
+          .font(.caption)
+          .foregroundStyle(.secondary)
+      }
     }
     .foregroundStyle(.primary)
+  }
+
+  /// A small box-art thumbnail so sets with similar names are easy to tell
+  /// apart at a glance, instead of relying on the set number alone.
+  private func setThumbnail(_ url: URL?) -> some View {
+    AsyncImage(url: url) { phase in
+      if case .success(let image) = phase {
+        image.resizable().scaledToFit()
+      } else {
+        RoundedRectangle(cornerRadius: 6)
+          .fill(Color(.systemGray5))
+      }
+    }
+    .frame(width: 44, height: 44)
+    .clipShape(RoundedRectangle(cornerRadius: 6))
   }
 }
