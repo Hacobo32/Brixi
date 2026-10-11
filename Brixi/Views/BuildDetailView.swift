@@ -26,7 +26,6 @@ struct BuildDetailView: View {
             Button("Switch Build", action: onSwitchBuild)
           }
         }
-        .onAppear { viewModel.loadIfNeeded() }
         .fullScreenCover(isPresented: $showPhoneCamera) {
           PhoneCameraCaptureView(
             frameSource: viewModel.phoneCameraSource,
@@ -38,6 +37,13 @@ struct BuildDetailView: View {
           )
         }
     }
+    // Attached to the NavigationStack itself, not to `content` -- `content`
+    // can resolve to an empty view before the first load finishes, and
+    // .onAppear on a view that resolves empty may never fire, which left
+    // this screen permanently blank with no way to start the fetch or even
+    // reach "Switch Build". The NavigationStack always has real presence,
+    // so this is reliable regardless of what `content` currently shows.
+    .onAppear { viewModel.loadIfNeeded() }
   }
 
   @ViewBuilder
@@ -97,6 +103,11 @@ struct BuildDetailView: View {
         Text(errorMessage)
           .foregroundStyle(.red)
           .padding()
+      } else {
+        // Startup state, before loadIfNeeded()'s result (success, error, or
+        // still-loading) has landed. Never leave this branch missing --
+        // see the .onAppear comment above for what happens when it's gone.
+        ProgressView()
       }
     }
   }
