@@ -8,3 +8,13 @@
 // builds with an empty key if Secrets.xcconfig doesn't exist yet.
 
 #include? "Secrets.xcconfig"
+
+// MWDATMockDevice is only used under #if DEBUG, but the Swift package still
+// links it into every configuration -- and it bundles its own copies of
+// classes MWDATCamera also defines (SUPMediaStream*, FBValueObject, ...),
+// so loading both triggers objc's "Class X is implemented in both" warning
+// and risks failed casts in the glasses streaming path. Swift packages
+// can't make a product dependency Debug-only, so instead have the linker
+// drop any library Release code never references; with every MockDevice
+// call compiled out, that removes it from the Release binary's load list.
+OTHER_LDFLAGS[config=Release] = $(inherited) -Wl,-dead_strip_dylibs
