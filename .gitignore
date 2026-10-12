@@ -11,3 +11,6 @@ DerivedData/
 
 # Secrets -- see Brixi/Config/Secrets.example.xcconfig
 Brixi/Config/Secrets.xcconfig
+
+# macOS
+.DS_Store
