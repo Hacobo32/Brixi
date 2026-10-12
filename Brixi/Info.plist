@@ -43,18 +43,38 @@
 		<string>fb-viewapp</string>
 	</array>
 
+	<!-- DAT moves traffic over three link types and checks Info.plist before it
+	     can use each one (see the SDK's getting-started guide). Bluetooth LE
+	     alone, which is what this had before, is enough for registration and
+	     presence, but not for camera streaming, which rides Bluetooth Classic
+	     via the External Accessory framework: without
+	     UISupportedExternalAccessoryProtocols declaring com.meta.ar.wearable,
+	     iOS refuses that link outright, which DAT then reports up as "Device
+	     is not connected" even though the glasses are paired and otherwise
+	     show as active. -->
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>processing</string>
 		<string>bluetooth-central</string>
 		<string>bluetooth-peripheral</string>
+		<string>external-accessory</string>
+	</array>
+	<key>UISupportedExternalAccessoryProtocols</key>
+	<array>
+		<string>com.meta.ar.wearable</string>
 	</array>
 	<key>NSBluetoothAlwaysUsageDescription</key>
 	<string>Needed to connect to Meta Wearables</string>
 	<key>NSCameraUsageDescription</key>
 	<string>Needed to identify LEGO pieces from your glasses' camera</string>
+	<key>NSLocalNetworkUsageDescription</key>
+	<string>Needed to connect to your glasses' camera over Wi-Fi for part scanning.</string>
+	<key>NSBonjourServices</key>
+	<array>
+		<string>_bonjour._tcp</string>
+	</array>
 
-	<!-- Populated at build time from Brixi/Config/Secrets.xcconfig (gitignored --
+	<!-- Populated at build time from Brixi/Config/Secrets.xcconfig (gitignored;
 	     see Brixi/Config/Secrets.example.xcconfig). Empty if that file doesn't exist. -->
 	<key>RebrickableAPIKey</key>
 	<string>$(REBRICKABLE_API_KEY)</string>
