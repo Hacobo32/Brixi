@@ -82,6 +82,24 @@ final class WearablesViewModel: ObservableObject {
     }
   }
 
+  // MARK: - URL handling
+
+  /// Completes the registration/permission round-trip after Meta AI redirects
+  /// back into this app via its URL scheme. Previously called directly as
+  /// `try? await Wearables.shared.handleUrl(url)` from BrixiApp's `onOpenURL`
+  /// -- the `try?` silently dropped any failure, so a round-trip that didn't
+  /// actually complete (e.g. an unsupported device) looked to the user like
+  /// nothing happened at all, with no error shown anywhere.
+  func handleUrl(_ url: URL) {
+    Task {
+      do {
+        _ = try await wearables.handleUrl(url)
+      } catch {
+        showError(error.localizedDescription)
+      }
+    }
+  }
+
   // MARK: - Connection lifecycle
 
   func startSession() {

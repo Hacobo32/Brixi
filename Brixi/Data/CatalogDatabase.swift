@@ -165,6 +165,21 @@ final class CatalogDatabase {
     return URL(string: "https://cdn.rebrickable.com/media/parts/elements/\(elementId).jpg")
   }
 
+  /// Any color's element photo for this part, for when the exact color has
+  /// none -- most parts look nearly identical in shape across colors, so a
+  /// same-shape photo beats an empty box. See BuildDetailViewModel.aggregate
+  /// for the full fallback chain (exact color, then this, then Rebrickable's
+  /// own part image, then a placeholder).
+  func elementImageURL(partNum: String) -> URL? {
+    let sql = "SELECT element_id FROM elements WHERE part_num = ? LIMIT 1"
+    guard let elementId = query(sql, bindings: [.text(partNum)], map: { stmt in
+      Int(sqlite3_column_int64(stmt, 0))
+    }).first else {
+      return nil
+    }
+    return URL(string: "https://cdn.rebrickable.com/media/parts/elements/\(elementId).jpg")
+  }
+
   // MARK: - Query plumbing
 
   /// Matches the SQL-side normalization applied to `set_num`/`name` in

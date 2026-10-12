@@ -21,11 +21,30 @@ struct BuildDetailView: View {
     NavigationStack {
       content
         .navigationTitle(viewModel.setName)
+        // Inline, with a wrapping principal title -- the large title truncated
+        // long set names (e.g. "Wonder Woman vs. Cheet…") against the trailing
+        // "Switch Build" button, with no way to read the rest.
+        .navigationBarTitleDisplayMode(.inline)
         .toolbar {
+          ToolbarItem(placement: .principal) {
+            Text(viewModel.setName)
+              .font(.headline)
+              .lineLimit(2)
+              .multilineTextAlignment(.center)
+              .minimumScaleFactor(0.8)
+          }
           ToolbarItem(placement: .topBarTrailing) {
             Button("Switch Build", action: onSwitchBuild)
           }
         }
+        #if DEBUG
+        // Reserves room below the last row for DebugMenuView's floating
+        // buttons (see its own comment), which otherwise sat on top of the
+        // Stepper +/- controls for the final rows in Needed Parts.
+        .safeAreaInset(edge: .bottom) {
+          Color.clear.frame(height: 140)
+        }
+        #endif
         .fullScreenCover(isPresented: $showPhoneCamera) {
           PhoneCameraCaptureView(
             frameSource: viewModel.phoneCameraSource,
@@ -173,8 +192,15 @@ struct BuildDetailView: View {
       if case .success(let image) = phase {
         image.resizable().scaledToFit()
       } else {
-        RoundedRectangle(cornerRadius: 6)
-          .fill(Color(.systemGray5))
+        ZStack {
+          RoundedRectangle(cornerRadius: 6)
+            .fill(Color(.systemGray5))
+          // Distinguishes "no photo available" (every part in NeededPart's
+          // fallback chain came up empty) from an image still loading.
+          Image(systemName: "cube")
+            .foregroundStyle(.secondary)
+            .font(.caption)
+        }
       }
     }
     .frame(width: 44, height: 44)

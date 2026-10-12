@@ -14,35 +14,43 @@ struct DebugMenuView: View {
   @Binding var showRecognitionTest: Bool
 
   var body: some View {
-    HStack {
+    // Anchored bottom-trailing, not vertically centered across the whole
+    // screen -- a Spacer() on both sides of the VStack used to center these
+    // over whatever content sat underneath (e.g. the Needed Parts list's
+    // Stepper controls), making them untappable. Views that place scrollable
+    // content under this overlay should reserve matching bottom space (see
+    // BuildDetailView's safeAreaInset).
+    VStack {
       Spacer()
-      VStack {
+      HStack {
         Spacer()
-        Button {
-          showRecognitionTest = true
-        } label: {
-          Image(systemName: "viewfinder")
-            .foregroundStyle(.white)
-            .padding()
-            .background(.secondary)
-            .clipShape(Circle())
-            .shadow(radius: 4)
+        VStack(spacing: 8) {
+          Button {
+            showRecognitionTest = true
+          } label: {
+            Image(systemName: "viewfinder")
+              .foregroundStyle(.white)
+              .padding()
+              .background(.secondary)
+              .clipShape(Circle())
+              .shadow(radius: 4)
+          }
+          .accessibilityIdentifier("recognition_test_button")
+          Button {
+            showDebugMenu = true
+          } label: {
+            Image(systemName: "ladybug.fill")
+              .foregroundStyle(.white)
+              .padding()
+              .background(.secondary)
+              .clipShape(Circle())
+              .shadow(radius: 4)
+          }
+          .accessibilityIdentifier("debug_menu_button")
         }
-        .accessibilityIdentifier("recognition_test_button")
-        Button {
-          showDebugMenu = true
-        } label: {
-          Image(systemName: "ladybug.fill")
-            .foregroundStyle(.white)
-            .padding()
-            .background(.secondary)
-            .clipShape(Circle())
-            .shadow(radius: 4)
-        }
-        .accessibilityIdentifier("debug_menu_button")
-        Spacer()
+        .padding(.trailing)
+        .padding(.bottom)
       }
-      .padding(.trailing)
     }
   }
 }

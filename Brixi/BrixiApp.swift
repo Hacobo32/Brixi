@@ -94,9 +94,7 @@ struct BrixiApp: App {
         )
       }
       .onOpenURL { url in
-        Task {
-          _ = try? await Wearables.shared.handleUrl(url)
-        }
+        wearablesViewModel.handleUrl(url)
       }
       .sheet(isPresented: $showRegistration) {
         RegistrationView(viewModel: wearablesViewModel)

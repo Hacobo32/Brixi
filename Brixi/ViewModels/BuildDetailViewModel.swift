@@ -204,6 +204,7 @@ final class BuildDetailViewModel: ObservableObject {
         )
       } else {
         let imageURL = catalog?.elementImageURL(partNum: entry.part.partNum, colorId: entry.color.id)
+          ?? catalog?.elementImageURL(partNum: entry.part.partNum)
           ?? entry.part.partImgURL
         byKey[key] = NeededPart(
           partNum: entry.part.partNum,

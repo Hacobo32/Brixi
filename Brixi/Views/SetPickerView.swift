@@ -22,6 +22,8 @@ struct SetPickerView: View {
   let onConnectGlasses: () -> Void
   let onSelectSet: (SetSelection) -> Void
 
+  @State private var pendingRemoval: BuildProject?
+
   var body: some View {
     NavigationStack {
       List {
@@ -34,6 +36,20 @@ struct SetPickerView: View {
                 buildRow(build)
               }
               .buttonStyle(.plain)
+              .swipeActions(edge: .trailing) {
+                Button(role: .destructive) {
+                  pendingRemoval = build
+                } label: {
+                  Label("Remove", systemImage: "trash")
+                }
+              }
+              .contextMenu {
+                Button(role: .destructive) {
+                  pendingRemoval = build
+                } label: {
+                  Label("Remove", systemImage: "trash")
+                }
+              }
             }
           }
         }
@@ -59,6 +75,22 @@ struct SetPickerView: View {
             Image(systemName: "eyeglasses")
           }
         }
+      }
+      .confirmationDialog(
+        "Remove this build?",
+        isPresented: Binding(
+          get: { pendingRemoval != nil },
+          set: { isPresented in if !isPresented { pendingRemoval = nil } }
+        ),
+        presenting: pendingRemoval
+      ) { build in
+        Button("Remove", role: .destructive) {
+          store.moveToHistory(setNum: build.setNum)
+          pendingRemoval = nil
+        }
+        Button("Cancel", role: .cancel) {}
+      } message: { build in
+        Text("\"\(build.setName)\" moves to Build History. You can restore it later.")
       }
     }
   }

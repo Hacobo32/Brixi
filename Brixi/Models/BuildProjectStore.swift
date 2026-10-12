@@ -17,12 +17,16 @@ import Foundation
 private struct BuildLibrary: Codable {
   var builds: [BuildProject]
   var activeSet: SetSelection?
+  var history: [BuildProject] = []
 }
 
 @MainActor
 final class BuildProjectStore: ObservableObject {
   @Published private(set) var builds: [BuildProject]
   @Published private(set) var activeSet: SetSelection?
+  /// Builds removed from `builds` via `moveToHistory`, kept around so removal
+  /// is reversible rather than an outright delete.
+  @Published private(set) var history: [BuildProject]
 
   private let fileURL: URL
 
@@ -32,6 +36,7 @@ final class BuildProjectStore: ObservableObject {
     let library = Self.load(from: url)
     self.builds = library.builds
     self.activeSet = library.activeSet
+    self.history = library.history
   }
 
   private static func defaultFileURL() -> URL {
@@ -54,7 +59,7 @@ final class BuildProjectStore: ObservableObject {
   }
 
   private func save() {
-    let library = BuildLibrary(builds: builds, activeSet: activeSet)
+    let library = BuildLibrary(builds: builds, activeSet: activeSet, history: history)
     guard let data = try? JSONEncoder().encode(library) else { return }
     try? data.write(to: fileURL, options: .atomic)
   }
@@ -77,6 +82,27 @@ final class BuildProjectStore: ObservableObject {
     if activeSet?.setNum == setNum {
       activeSet = nil
     }
+    save()
+  }
+
+  /// Removes a build from "My Builds" but keeps it in `history` rather than
+  /// deleting it outright, so it can be restored later.
+  func moveToHistory(setNum: String) {
+    guard let index = builds.firstIndex(where: { $0.setNum == setNum }) else { return }
+    let build = builds.remove(at: index)
+    history.append(build)
+    if activeSet?.setNum == setNum {
+      activeSet = nil
+    }
+    save()
+  }
+
+  /// Moves a build back out of `history` into "My Builds", preserving
+  /// whatever found/not-found progress it had when removed.
+  func restore(setNum: String) {
+    guard let index = history.firstIndex(where: { $0.setNum == setNum }) else { return }
+    let build = history.remove(at: index)
+    builds.append(build)
     save()
   }
 

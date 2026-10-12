@@ -112,12 +112,27 @@ final class CameraCaptureController {
 
   // MARK: - Session
 
+  /// Races the session's state against its own error stream, so a failure
+  /// to start (unsupported device, firmware update required, etc.) surfaces
+  /// the SDK's specific reason instead of the generic "ended before it
+  /// started" -- the state stream alone never carries that reason.
   private func waitForSessionStarted(_ session: DeviceSession) async throws {
-    for await state in session.stateStream() {
-      if state == .started { return }
-      if state == .stopped {
-        throw CameraCaptureError.sessionFailed("Session ended before it started.")
+    try await withThrowingTaskGroup(of: Void.self) { group in
+      group.addTask {
+        for await state in session.stateStream() {
+          if state == .started { return }
+          if state == .stopped {
+            throw CameraCaptureError.sessionFailed("Session ended before it started.")
+          }
+        }
       }
+      group.addTask {
+        for await error in session.errorStream() {
+          throw CameraCaptureError.sessionFailed(error.localizedDescription)
+        }
+      }
+      defer { group.cancelAll() }
+      try await group.next()
     }
   }
 
@@ -135,7 +150,15 @@ final class CameraCaptureController {
   private func waitForStreaming(_ stream: MWDATCamera.Stream) async throws {
     let bag = ListenerTokenBag()
     let didResume = OSAllocatedUnfairLock(initialState: false)
+    // Captured from the stream's own error publisher, which the state
+    // publisher alone doesn't carry -- read when `.stopped` arrives so a
+    // failure (thermal, hinges closed, device incompatible, etc.) surfaces
+    // its specific reason instead of the generic fallback message.
+    let latestError = OSAllocatedUnfairLock<String?>(initialState: nil)
     try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
+      stream.errorPublisher.listen { error in
+        latestError.withLock { $0 = error.localizedDescription }
+      }.store(in: bag)
       stream.statePublisher.listen { state in
         switch state {
         case .streaming:
@@ -154,8 +177,9 @@ final class CameraCaptureController {
             return true
           }
           guard shouldResume else { return }
+          let message = latestError.withLock { $0 } ?? "Stream stopped before it started."
           bag.clear()
-          continuation.resume(throwing: CameraCaptureError.streamFailed("Stream stopped before it started."))
+          continuation.resume(throwing: CameraCaptureError.streamFailed(message))
         default:
           break
         }
