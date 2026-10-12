@@ -18,6 +18,27 @@ import SwiftUI
 import MWDATMockDevice
 #endif
 
+private extension View {
+  /// Attaches the Registration and Settings sheets directly to a given
+  /// SetPickerView instance, so it can present them over itself regardless
+  /// of whether that instance is the root content or already inside
+  /// another sheet (see the call site in BrixiApp for why that distinction
+  /// matters).
+  func glassesAndSettingsSheets(
+    wearablesViewModel: WearablesViewModel,
+    showRegistration: Binding<Bool>,
+    showSettings: Binding<Bool>
+  ) -> some View {
+    self
+      .sheet(isPresented: showRegistration) {
+        RegistrationView(viewModel: wearablesViewModel)
+      }
+      .sheet(isPresented: showSettings) {
+        SettingsView(viewModel: wearablesViewModel)
+      }
+  }
+}
+
 @main
 struct BrixiApp: App {
   @StateObject private var wearablesViewModel: WearablesViewModel
@@ -83,6 +104,11 @@ struct BrixiApp: App {
             onSelectSet: { selection in buildStore.setActive(selection) },
             onOpenSettings: { showSettings = true }
           )
+          .glassesAndSettingsSheets(
+            wearablesViewModel: wearablesViewModel,
+            showRegistration: $showRegistration,
+            showSettings: $showSettings
+          )
         }
       }
       .sheet(isPresented: $showSetPicker) {
@@ -97,15 +123,20 @@ struct BrixiApp: App {
           },
           onOpenSettings: { showSettings = true }
         )
+        // Sheets for these two live here too, not only on the root-level
+        // SetPickerView above -- this instance is itself already inside a
+        // sheet (the "Switch Build" one), and a view underneath an active
+        // sheet can't present a second one: the binding flips but iOS has
+        // nothing to present it onto, so the buttons silently did nothing
+        // whenever reached via "Switch Build".
+        .glassesAndSettingsSheets(
+          wearablesViewModel: wearablesViewModel,
+          showRegistration: $showRegistration,
+          showSettings: $showSettings
+        )
       }
       .onOpenURL { url in
         wearablesViewModel.handleUrl(url)
-      }
-      .sheet(isPresented: $showRegistration) {
-        RegistrationView(viewModel: wearablesViewModel)
-      }
-      .sheet(isPresented: $showSettings) {
-        SettingsView(viewModel: wearablesViewModel)
       }
       .alert("Something went wrong", isPresented: $wearablesViewModel.showError) {
         Button("OK") {
