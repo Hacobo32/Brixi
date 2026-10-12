@@ -19,8 +19,10 @@ struct SetSelection: Hashable, Codable {
 struct SetPickerView: View {
   @ObservedObject var viewModel: SetPickerViewModel
   @ObservedObject var store: BuildProjectStore
+  @ObservedObject var wearablesViewModel: WearablesViewModel
   let onConnectGlasses: () -> Void
   let onSelectSet: (SetSelection) -> Void
+  let onOpenSettings: () -> Void
 
   @State private var pendingRemoval: BuildProject?
 
@@ -72,7 +74,17 @@ struct SetPickerView: View {
           Button {
             onConnectGlasses()
           } label: {
+            // Reflects connection status at a glance, per the punch-list ask
+            // -- green once glasses are actually active, not just registered.
             Image(systemName: "eyeglasses")
+              .foregroundStyle(wearablesViewModel.hasActiveDevice ? .green : .primary)
+          }
+        }
+        ToolbarItem(placement: .topBarTrailing) {
+          Button {
+            onOpenSettings()
+          } label: {
+            Image(systemName: "gearshape")
           }
         }
       }

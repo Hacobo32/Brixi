@@ -23,6 +23,10 @@ final class WearablesViewModel: ObservableObject {
   @Published var hasActiveDevice: Bool = false
   @Published var showError = false
   @Published var errorMessage = ""
+  /// Rolling log of connection-relevant events, newest first, for the
+  /// Settings screen's glasses diagnostics -- not full SDK logging, just
+  /// enough to see what happened in what order when something goes wrong.
+  @Published private(set) var eventLog: [String] = []
 
   private var registrationTask: Task<Void, Never>?
   private var sessionTask: Task<Void, Never>?
@@ -43,12 +47,14 @@ final class WearablesViewModel: ObservableObject {
     registrationTask = Task {
       for await state in wearables.registrationStateStream() {
         self.registrationState = state
+        self.log("Registration: \(state)")
       }
     }
 
     deviceMonitorTask = Task {
       for await deviceId in deviceSelector.activeDeviceStream() {
         self.hasActiveDevice = deviceId != nil
+        self.log(deviceId != nil ? "Device active" : "No active device")
       }
     }
   }
@@ -63,22 +69,55 @@ final class WearablesViewModel: ObservableObject {
 
   func connectGlasses() {
     guard registrationState != .registering else { return }
+    log("Connect Glasses tapped")
     Task {
       do {
         try await wearables.startRegistration()
       } catch {
+        log("startRegistration failed: \(error.localizedDescription)")
         showError(error.localizedDescription)
       }
     }
   }
 
   func disconnectGlasses() {
+    log("Disconnect Glasses tapped")
     Task {
       do {
         try await wearables.startUnregistration()
       } catch {
+        log("startUnregistration failed: \(error.localizedDescription)")
         showError(error.localizedDescription)
       }
+    }
+  }
+
+  /// Unregisters, then re-registers from a clean slate -- a stronger reset
+  /// than Connect/Disconnect separately, for when registration looks stuck
+  /// (e.g. bounces to Meta AI and back with no visible change).
+  func resetRegistration() {
+    log("Reset Registration tapped")
+    Task {
+      do {
+        if registrationState == .registered {
+          try await wearables.startUnregistration()
+        }
+        try await wearables.startRegistration()
+      } catch {
+        log("Reset Registration failed: \(error.localizedDescription)")
+        showError(error.localizedDescription)
+      }
+    }
+  }
+
+  /// The single "try to fix it" action: register if not registered yet,
+  /// otherwise (re)start the device session.
+  func reconnect() {
+    log("Reconnect tapped")
+    if registrationState == .registered {
+      startSession()
+    } else {
+      connectGlasses()
     }
   }
 
@@ -91,10 +130,13 @@ final class WearablesViewModel: ObservableObject {
   /// actually complete (e.g. an unsupported device) looked to the user like
   /// nothing happened at all, with no error shown anywhere.
   func handleUrl(_ url: URL) {
+    log("Opened by URL from Meta AI")
     Task {
       do {
         _ = try await wearables.handleUrl(url)
+        log("handleUrl completed")
       } catch {
+        log("handleUrl failed: \(error.localizedDescription)")
         showError(error.localizedDescription)
       }
     }
@@ -104,6 +146,7 @@ final class WearablesViewModel: ObservableObject {
 
   func startSession() {
     guard deviceSession == nil else { return }
+    log("Starting session")
     do {
       let session = try wearables.createSession(deviceSelector: deviceSelector)
       try session.start()
@@ -112,18 +155,68 @@ final class WearablesViewModel: ObservableObject {
       sessionTask = Task {
         for await state in session.stateStream() {
           self.sessionState = state
+          self.log("Session: \(state)")
           if state == .stopped {
             self.deviceSession = nil
           }
         }
       }
     } catch {
+      log("startSession failed: \(error.localizedDescription)")
       showError(error.localizedDescription)
     }
   }
 
   func stopSession() {
+    log("Stopping session")
     deviceSession?.stop()
+  }
+
+  // MARK: - Permissions
+
+  /// Where the DAT camera grant stands, as a tri-state: DAT's own
+  /// `PermissionStatus` only has `.granted`/`.denied`, with no
+  /// not-determined -- but `checkPermissionStatus` also throws when there's
+  /// no connected device to read the grant off of, and that throw means
+  /// "unknown", not "denied". Folding it into `.denied` would show a
+  /// disconnected-but-otherwise-fine setup as if camera access had been
+  /// refused.
+  enum CameraAccess {
+    case unknown
+    case granted
+    case denied
+  }
+
+  func checkCameraAccess() async -> CameraAccess {
+    do {
+      let status = try await wearables.checkPermissionStatus(.camera)
+      return status == .granted ? .granted : .denied
+    } catch {
+      return .unknown
+    }
+  }
+
+  // MARK: - Camera stream test
+
+  @Published private(set) var isTestingStream = false
+  @Published private(set) var streamTestResult: String?
+
+  /// Exercises the full session → camera → stream pipeline for one photo --
+  /// the same path "Scan with Glasses" uses -- so the health check surfaces
+  /// the same specific failure reason a real scan would hit.
+  func testCameraStream() async {
+    isTestingStream = true
+    streamTestResult = nil
+    log("Testing camera stream")
+    defer { isTestingStream = false }
+    do {
+      _ = try await CameraCaptureController(wearables: wearables).captureOnePhoto()
+      streamTestResult = "Camera stream works — captured a test photo."
+      log("Camera stream test succeeded")
+    } catch {
+      streamTestResult = error.localizedDescription
+      log("Camera stream test failed: \(error.localizedDescription)")
+    }
   }
 
   // MARK: - Errors
@@ -135,5 +228,15 @@ final class WearablesViewModel: ObservableObject {
 
   func dismissError() {
     showError = false
+  }
+
+  // MARK: - Diagnostics
+
+  private func log(_ message: String) {
+    let timestamp = Date().formatted(date: .omitted, time: .standard)
+    eventLog.insert("\(timestamp)  \(message)", at: 0)
+    if eventLog.count > 50 {
+      eventLog.removeLast()
+    }
   }
 }

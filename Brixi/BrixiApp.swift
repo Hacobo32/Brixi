@@ -24,6 +24,7 @@ struct BrixiApp: App {
   @StateObject private var buildStore = BuildProjectStore()
   @State private var showRegistration = false
   @State private var showSetPicker = false
+  @State private var showSettings = false
 
   private let catalog: CatalogDatabase?
   private let rebrickableClient: RebrickableClient?
@@ -77,8 +78,10 @@ struct BrixiApp: App {
           SetPickerView(
             viewModel: setPickerViewModel,
             store: buildStore,
+            wearablesViewModel: wearablesViewModel,
             onConnectGlasses: { showRegistration = true },
-            onSelectSet: { selection in buildStore.setActive(selection) }
+            onSelectSet: { selection in buildStore.setActive(selection) },
+            onOpenSettings: { showSettings = true }
           )
         }
       }
@@ -86,11 +89,13 @@ struct BrixiApp: App {
         SetPickerView(
           viewModel: setPickerViewModel,
           store: buildStore,
+          wearablesViewModel: wearablesViewModel,
           onConnectGlasses: { showRegistration = true },
           onSelectSet: { selection in
             buildStore.setActive(selection)
             showSetPicker = false
-          }
+          },
+          onOpenSettings: { showSettings = true }
         )
       }
       .onOpenURL { url in
@@ -98,6 +103,9 @@ struct BrixiApp: App {
       }
       .sheet(isPresented: $showRegistration) {
         RegistrationView(viewModel: wearablesViewModel)
+      }
+      .sheet(isPresented: $showSettings) {
+        SettingsView(viewModel: wearablesViewModel)
       }
       .alert("Something went wrong", isPresented: $wearablesViewModel.showError) {
         Button("OK") {

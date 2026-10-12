@@ -39,6 +39,7 @@
 		BF0000000000000000000141 /* PhoneCameraFrameSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF0000000000000000000131 /* PhoneCameraFrameSource.swift */; };
 		BF0000000000000000000142 /* CameraPreviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF0000000000000000000132 /* CameraPreviewView.swift */; };
 		BF0000000000000000000143 /* PhoneCameraCaptureView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF0000000000000000000133 /* PhoneCameraCaptureView.swift */; };
+		BF0000000000000000000150 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF0000000000000000000151 /* SettingsView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -75,6 +76,7 @@
 		BF0000000000000000000131 /* PhoneCameraFrameSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhoneCameraFrameSource.swift; sourceTree = "<group>"; };
 		BF0000000000000000000132 /* CameraPreviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraPreviewView.swift; sourceTree = "<group>"; };
 		BF0000000000000000000133 /* PhoneCameraCaptureView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhoneCameraCaptureView.swift; sourceTree = "<group>"; };
+		BF0000000000000000000151 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -207,6 +209,7 @@
 				BF0000000000000000000108 /* BuildDetailView.swift */,
 				BF0000000000000000000132 /* CameraPreviewView.swift */,
 				BF0000000000000000000133 /* PhoneCameraCaptureView.swift */,
+				BF0000000000000000000151 /* SettingsView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -314,6 +317,7 @@
 				BF0000000000000000000141 /* PhoneCameraFrameSource.swift in Sources */,
 				BF0000000000000000000142 /* CameraPreviewView.swift in Sources */,
 				BF0000000000000000000143 /* PhoneCameraCaptureView.swift in Sources */,
+				BF0000000000000000000150 /* SettingsView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
