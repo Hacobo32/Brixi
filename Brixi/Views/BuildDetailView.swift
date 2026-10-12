@@ -143,6 +143,7 @@ struct BuildDetailView: View {
 
   private func partRow(_ part: NeededPart) -> some View {
     HStack {
+      partThumbnail(part.imageURL)
       VStack(alignment: .leading, spacing: 4) {
         Text(part.name)
           .font(.body)
@@ -165,5 +166,18 @@ struct BuildDetailView: View {
       )
       .labelsHidden()
     }
+  }
+
+  private func partThumbnail(_ url: URL?) -> some View {
+    AsyncImage(url: url) { phase in
+      if case .success(let image) = phase {
+        image.resizable().scaledToFit()
+      } else {
+        RoundedRectangle(cornerRadius: 6)
+          .fill(Color(.systemGray5))
+      }
+    }
+    .frame(width: 44, height: 44)
+    .clipShape(RoundedRectangle(cornerRadius: 6))
   }
 }

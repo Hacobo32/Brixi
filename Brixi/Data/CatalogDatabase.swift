@@ -75,13 +75,16 @@ final class CatalogDatabase {
 
   /// Local substring search over the bundled `sets` table, by set number or
   /// name -- no network needed, since sets are fully bundled (see
-  /// docs/rebrickable-brickognize-feasibility.md, Part 1).
+  /// docs/rebrickable-brickognize-feasibility.md, Part 1). Both sides are
+  /// normalized (lowercased, spaces/hyphens stripped) so "Spiderman" still
+  /// matches catalog names like "Spider-Man", which LIKE alone would miss.
   func searchSets(matching searchText: String, limit: Int = 25) -> [CatalogSet] {
-    let pattern = "%\(searchText)%"
+    let pattern = "%\(normalize(searchText))%"
     let sql = """
       SELECT set_num, name, year, theme_id, num_parts, img_url
       FROM sets
-      WHERE set_num LIKE ? OR name LIKE ?
+      WHERE REPLACE(LOWER(set_num), '-', '') LIKE ?
+         OR REPLACE(REPLACE(LOWER(name), '-', ''), ' ', '') LIKE ?
       ORDER BY year DESC
       LIMIT ?
       """
@@ -163,6 +166,14 @@ final class CatalogDatabase {
   }
 
   // MARK: - Query plumbing
+
+  /// Matches the SQL-side normalization applied to `set_num`/`name` in
+  /// `searchSets`: lowercased, spaces and hyphens stripped.
+  private func normalize(_ text: String) -> String {
+    text.lowercased()
+      .replacingOccurrences(of: "-", with: "")
+      .replacingOccurrences(of: " ", with: "")
+  }
 
   private enum Binding {
     case text(String)
