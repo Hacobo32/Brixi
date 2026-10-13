@@ -154,7 +154,15 @@ final class BuildDetailViewModel: ObservableObject {
   private func evaluate(_ outcome: RecognitionOutcome) -> ScanResult {
     switch outcome {
     case .recognized(let piece):
-      guard piece.item.type == .part, let match = matchNeededPart(partNum: piece.item.id) else {
+      // .sticker, not just .part: Brickognize classifies a printed/decorated
+      // piece's own part number under .sticker (e.g. a tile with a sticker
+      // design), and RecognitionService.resolve already treats the two the
+      // same for catalog lookup. Gating on .part alone routed every
+      // genuinely-needed decorated piece straight to "not in set" without
+      // ever checking the needed-parts list.
+      guard piece.item.type == .part || piece.item.type == .sticker,
+            let match = matchNeededPart(partNum: piece.item.id)
+      else {
         return .notInSet(recognizedName: piece.item.name)
       }
       guard piece.colorId == match.colorId else {
@@ -164,7 +172,7 @@ final class BuildDetailViewModel: ObservableObject {
       return .autoFound(match)
 
     case .lowConfidence(let candidates):
-      for candidate in candidates where candidate.type == .part {
+      for candidate in candidates where candidate.type == .part || candidate.type == .sticker {
         if let match = matchNeededPart(partNum: candidate.id) {
           return .needsConfirmation(match, recognizedName: candidate.name)
         }
