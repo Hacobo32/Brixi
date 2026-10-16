@@ -46,6 +46,18 @@ private struct RebrickablePartsPage: Decodable {
   let results: [RebrickablePartEntry]
 }
 
+private struct RebrickablePartSearchResult: Decodable {
+  let partNum: String
+
+  enum CodingKeys: String, CodingKey {
+    case partNum = "part_num"
+  }
+}
+
+private struct RebrickablePartSearchPage: Decodable {
+  let results: [RebrickablePartSearchResult]
+}
+
 enum RebrickableClientError: Error, LocalizedError {
   case missingAPIKey
   case invalidResponse
@@ -112,5 +124,30 @@ final class RebrickableClient {
     }
 
     return all
+  }
+
+  /// Resolves a BrickLink-style part ID (what Brickognize returns) to its
+  /// Rebrickable part_num, per docs/pile-mode-spec.md §6. Returns nil
+  /// (rather than throwing) on no match or any request failure, since
+  /// callers treat this as one optional step in a multi-step fallback --
+  /// a lookup failure should fall through to the next step, not abort
+  /// recognition.
+  func lookupPartNum(bricklinkID: String) async -> String? {
+    var components = URLComponents(string: "https://rebrickable.com/api/v3/lego/parts/")
+    components?.queryItems = [URLQueryItem(name: "bricklink_id", value: bricklinkID)]
+    guard let url = components?.url else { return nil }
+
+    var request = URLRequest(url: url)
+    request.setValue("key \(apiKey)", forHTTPHeaderField: "Authorization")
+
+    guard
+      let (data, response) = try? await session.data(for: request),
+      let http = response as? HTTPURLResponse,
+      (200...299).contains(http.statusCode),
+      let page = try? JSONDecoder().decode(RebrickablePartSearchPage.self, from: data)
+    else {
+      return nil
+    }
+    return page.results.first?.partNum
   }
 }

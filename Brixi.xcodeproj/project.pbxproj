@@ -41,6 +41,7 @@
 		BF0000000000000000000143 /* PhoneCameraCaptureView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF0000000000000000000133 /* PhoneCameraCaptureView.swift */; };
 		BF0000000000000000000150 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF0000000000000000000151 /* SettingsView.swift */; };
 		BF0000000000000000000152 /* CaptureDiagnostics.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF0000000000000000000153 /* CaptureDiagnostics.swift */; };
+		BF0000000000000000000154 /* PartIDResolver.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF0000000000000000000155 /* PartIDResolver.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -79,6 +80,7 @@
 		BF0000000000000000000133 /* PhoneCameraCaptureView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhoneCameraCaptureView.swift; sourceTree = "<group>"; };
 		BF0000000000000000000151 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		BF0000000000000000000153 /* CaptureDiagnostics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaptureDiagnostics.swift; sourceTree = "<group>"; };
+		BF0000000000000000000155 /* PartIDResolver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PartIDResolver.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -187,6 +189,7 @@
 				BF0000000000000000000130 /* FrameSource.swift */,
 				BF0000000000000000000131 /* PhoneCameraFrameSource.swift */,
 				BF0000000000000000000153 /* CaptureDiagnostics.swift */,
+				BF0000000000000000000155 /* PartIDResolver.swift */,
 			);
 			path = Recognition;
 			sourceTree = "<group>";
@@ -323,6 +326,7 @@
 				BF0000000000000000000143 /* PhoneCameraCaptureView.swift in Sources */,
 				BF0000000000000000000150 /* SettingsView.swift in Sources */,
 				BF0000000000000000000152 /* CaptureDiagnostics.swift in Sources */,
+				BF0000000000000000000154 /* PartIDResolver.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

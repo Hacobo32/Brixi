@@ -14,12 +14,17 @@ final class BuildDetailViewModel: ObservableObject {
   /// Outcome of one "Scan for Parts" attempt, checked against this build's
   /// needed-parts list.
   enum ScanResult {
-    /// A confident match on both part family and exact color -- recorded
-    /// automatically.
+    /// A confident item-ID match, recorded automatically. Color is not
+    /// part of this gate -- see docs/pile-mode-spec.md §4.4 and
+    /// matchNeededParts(for:): Brickognize's predicted color is far less
+    /// reliable than its item identification (confirmed empirically --
+    /// see the Phase 0 testing notes), so requiring it to match before
+    /// trusting an otherwise-confident recognition meant almost nothing
+    /// ever auto-found, even when the identification was correct.
     case autoFound(NeededPart)
-    /// A match on part family, but the predicted color didn't match (color
-    /// prediction is the weaker signal -- see the empirical testing
-    /// findings) or the item-match confidence itself was low. Needs a human
+    /// Either the item-match confidence itself was low, or the matched
+    /// part shape is needed in more than one color and color is the only
+    /// signal (weak as it is) that can tell them apart. Needs a human
     /// yes/no.
     case needsConfirmation(NeededPart, recognizedName: String)
     /// Recognized something, but it isn't on this set's needed-parts list.
@@ -51,6 +56,7 @@ final class BuildDetailViewModel: ObservableObject {
   private let catalog: CatalogDatabase?
   private let glassesFrameSource = GlassesFrameSource()
   private let recognitionService: RecognitionService?
+  private let partIDResolver: PartIDResolver
 
   init(
     setNum: String,
@@ -67,6 +73,7 @@ final class BuildDetailViewModel: ObservableObject {
     self.client = client
     self.catalog = catalog
     self.recognitionService = catalog.map { RecognitionService(catalog: $0) }
+    self.partIDResolver = PartIDResolver(client: client)
     self.build = store.build(setNum: setNum)
   }
 
@@ -140,7 +147,7 @@ final class BuildDetailViewModel: ObservableObject {
     }
     do {
       let outcome = try await recognitionService.recognize(imageData: imageData)
-      scanResult = evaluate(outcome)
+      scanResult = await evaluate(outcome)
     } catch {
       errorMessage = error.localizedDescription
     }
@@ -156,7 +163,7 @@ final class BuildDetailViewModel: ObservableObject {
     scanResult = nil
   }
 
-  private func evaluate(_ outcome: RecognitionOutcome) -> ScanResult {
+  private func evaluate(_ outcome: RecognitionOutcome) async -> ScanResult {
     switch outcome {
     case .recognized(let piece):
       // .sticker, not just .part: Brickognize classifies a printed/decorated
@@ -165,20 +172,29 @@ final class BuildDetailViewModel: ObservableObject {
       // same for catalog lookup. Gating on .part alone routed every
       // genuinely-needed decorated piece straight to "not in set" without
       // ever checking the needed-parts list.
-      guard piece.item.type == .part || piece.item.type == .sticker,
-            let match = matchNeededPart(partNum: piece.item.id)
-      else {
+      guard piece.item.type == .part || piece.item.type == .sticker else {
         return .notInSet(recognizedName: piece.item.name)
       }
-      guard piece.colorId == match.colorId else {
-        return .needsConfirmation(match, recognizedName: piece.item.name)
+      let matches = await matchNeededParts(for: piece.item)
+      guard let firstMatch = matches.first else {
+        return .notInSet(recognizedName: piece.item.name)
       }
-      markFound(match, delta: 1)
-      return .autoFound(match)
+      guard matches.count == 1 else {
+        // This part shape is needed in more than one color -- color is
+        // the only signal that can tell them apart, so ask rather than
+        // silently pick one, even though the prediction itself is weak.
+        // Prefer whichever color variant the prediction actually landed
+        // on, if it landed on one of the ones this build needs at all.
+        let bestGuess = matches.first { $0.colorId == piece.colorId } ?? firstMatch
+        return .needsConfirmation(bestGuess, recognizedName: piece.item.name)
+      }
+      markFound(firstMatch, delta: 1)
+      return .autoFound(firstMatch)
 
     case .lowConfidence(let candidates):
       for candidate in candidates where candidate.type == .part || candidate.type == .sticker {
-        if let match = matchNeededPart(partNum: candidate.id) {
+        let matches = await matchNeededParts(for: candidate)
+        if let match = matches.first {
           return .needsConfirmation(match, recognizedName: candidate.name)
         }
       }
@@ -189,13 +205,24 @@ final class BuildDetailViewModel: ObservableObject {
     }
   }
 
-  /// Matches by part family (see CatalogDatabase.partFamily), not exact
-  /// SKU -- a recognized print/mold variant should still hit the needed
-  /// line for its base part.
-  private func matchNeededPart(partNum: String) -> NeededPart? {
-    guard let catalog, let build else { return nil }
-    let family = catalog.partFamily(partNum: partNum)
-    return build.parts.first { family.contains($0.partNum) }
+  /// Matches a recognized item against this build's needed-parts list.
+  /// Tries each of PartIDResolver's ID candidates (raw ID, shape-stripped
+  /// base ID, live Rebrickable lookup -- see PartIDResolver, per
+  /// docs/pile-mode-spec.md §6) against the catalog's part family in
+  /// order, and returns every needed-parts row the first matching
+  /// candidate hits -- more than one means this part shape is needed in
+  /// multiple colors, which the caller uses to decide whether color needs
+  /// asking about.
+  private func matchNeededParts(for item: BrickognizeItem) async -> [NeededPart] {
+    guard let catalog, let build else { return [] }
+    for candidate in await partIDResolver.candidates(for: item) {
+      let family = catalog.partFamily(partNum: candidate)
+      let matches = build.parts.filter { family.contains($0.partNum) }
+      if !matches.isEmpty {
+        return matches
+      }
+    }
+    return []
   }
 
   /// Collapses Rebrickable's per-line-item response into one entry per
