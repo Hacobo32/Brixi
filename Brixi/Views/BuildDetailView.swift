@@ -40,9 +40,11 @@ struct BuildDetailView: View {
         #if DEBUG
         // Reserves room below the last row for DebugMenuView's floating
         // buttons (see its own comment), which otherwise sat on top of the
-        // Stepper +/- controls for the final rows in Needed Parts.
+        // Stepper +/- controls for the final rows in Needed Parts. Grown
+        // from 140 to 190 when a third button (pile segmentation test)
+        // was added to that stack.
         .safeAreaInset(edge: .bottom) {
-          Color.clear.frame(height: 140)
+          Color.clear.frame(height: 190)
         }
         #endif
         .fullScreenCover(isPresented: $showPhoneCamera) {

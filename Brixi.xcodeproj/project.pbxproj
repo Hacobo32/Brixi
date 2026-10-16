@@ -42,6 +42,9 @@
 		BF0000000000000000000150 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF0000000000000000000151 /* SettingsView.swift */; };
 		BF0000000000000000000152 /* CaptureDiagnostics.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF0000000000000000000153 /* CaptureDiagnostics.swift */; };
 		BF0000000000000000000154 /* PartIDResolver.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF0000000000000000000155 /* PartIDResolver.swift */; };
+		BF0000000000000000000156 /* PileSegmenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF0000000000000000000157 /* PileSegmenter.swift */; };
+		BF0000000000000000000158 /* PileSegmentationTestViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF0000000000000000000159 /* PileSegmentationTestViewModel.swift */; };
+		BF0000000000000000000160 /* PileSegmentationTestView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF0000000000000000000161 /* PileSegmentationTestView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -81,6 +84,9 @@
 		BF0000000000000000000151 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		BF0000000000000000000153 /* CaptureDiagnostics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaptureDiagnostics.swift; sourceTree = "<group>"; };
 		BF0000000000000000000155 /* PartIDResolver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PartIDResolver.swift; sourceTree = "<group>"; };
+		BF0000000000000000000157 /* PileSegmenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PileSegmenter.swift; sourceTree = "<group>"; };
+		BF0000000000000000000159 /* PileSegmentationTestViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PileSegmentationTestViewModel.swift; sourceTree = "<group>"; };
+		BF0000000000000000000161 /* PileSegmentationTestView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PileSegmentationTestView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -147,6 +153,7 @@
 				BF00000000000000000000C6 /* MockDeviceCardViewModel.swift */,
 				BF0000000000000000000105 /* SetPickerViewModel.swift */,
 				BF0000000000000000000106 /* BuildDetailViewModel.swift */,
+				BF0000000000000000000159 /* PileSegmentationTestViewModel.swift */,
 			);
 			path = ViewModels;
 			sourceTree = "<group>";
@@ -166,6 +173,7 @@
 				BF0000000000000000000132 /* CameraPreviewView.swift */,
 				BF0000000000000000000133 /* PhoneCameraCaptureView.swift */,
 				BF0000000000000000000151 /* SettingsView.swift */,
+				BF0000000000000000000161 /* PileSegmentationTestView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -190,6 +198,7 @@
 				BF0000000000000000000131 /* PhoneCameraFrameSource.swift */,
 				BF0000000000000000000153 /* CaptureDiagnostics.swift */,
 				BF0000000000000000000155 /* PartIDResolver.swift */,
+				BF0000000000000000000157 /* PileSegmenter.swift */,
 			);
 			path = Recognition;
 			sourceTree = "<group>";
@@ -327,6 +336,9 @@
 				BF0000000000000000000150 /* SettingsView.swift in Sources */,
 				BF0000000000000000000152 /* CaptureDiagnostics.swift in Sources */,
 				BF0000000000000000000154 /* PartIDResolver.swift in Sources */,
+				BF0000000000000000000156 /* PileSegmenter.swift in Sources */,
+				BF0000000000000000000158 /* PileSegmentationTestViewModel.swift in Sources */,
+				BF0000000000000000000160 /* PileSegmentationTestView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

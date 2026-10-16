@@ -54,8 +54,10 @@ struct BrixiApp: App {
   #if DEBUG
   @State private var showDebugMenu = false
   @State private var showRecognitionTest = false
+  @State private var showPileSegmentationTest = false
   @StateObject private var mockDeviceKitViewModel = MockDeviceKitViewModel(mockDeviceKit: MockDeviceKit.shared)
   @StateObject private var recognitionTestViewModel = RecognitionTestViewModel()
+  @StateObject private var pileSegmentationTestViewModel = PileSegmentationTestViewModel()
   #endif
 
   init() {
@@ -152,8 +154,15 @@ struct BrixiApp: App {
       .sheet(isPresented: $showRecognitionTest) {
         RecognitionTestView(viewModel: recognitionTestViewModel)
       }
+      .sheet(isPresented: $showPileSegmentationTest) {
+        PileSegmentationTestView(viewModel: pileSegmentationTestViewModel)
+      }
       .overlay {
-        DebugMenuView(showDebugMenu: $showDebugMenu, showRecognitionTest: $showRecognitionTest)
+        DebugMenuView(
+          showDebugMenu: $showDebugMenu,
+          showRecognitionTest: $showRecognitionTest,
+          showPileSegmentationTest: $showPileSegmentationTest
+        )
       }
       #endif
     }

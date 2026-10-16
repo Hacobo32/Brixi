@@ -12,6 +12,7 @@ import SwiftUI
 struct DebugMenuView: View {
   @Binding var showDebugMenu: Bool
   @Binding var showRecognitionTest: Bool
+  @Binding var showPileSegmentationTest: Bool
 
   var body: some View {
     // Anchored bottom-trailing, not vertically centered across the whole
@@ -36,6 +37,17 @@ struct DebugMenuView: View {
               .shadow(radius: 4)
           }
           .accessibilityIdentifier("recognition_test_button")
+          Button {
+            showPileSegmentationTest = true
+          } label: {
+            Image(systemName: "square.dashed")
+              .foregroundStyle(.white)
+              .padding()
+              .background(.secondary)
+              .clipShape(Circle())
+              .shadow(radius: 4)
+          }
+          .accessibilityIdentifier("pile_segmentation_test_button")
           Button {
             showDebugMenu = true
           } label: {
