@@ -138,10 +138,9 @@ Re-scoring our test data at shape level against BrickLink's inventory raised set
 
 ## 7. Glasses session and audio rules (from the field report + Meta docs)
 
-- Upgrade DAT SDK **0.9.0 → 1.0** (read the changelog first).
-- **Audio choice (Jake to decide):**
-  - **Output only (recommended for v1):** speak through A2DP and don't use the mic or HFP. This avoids the HFP bug below entirely, and speech quality is better.
-  - **With voice commands:** configure and start HFP **before** starting the camera stream, wait for the route to settle, then start the stream. Keep HFP on across sessions. (Meta docs: starting the stream before HFP is ready "can cause the audio route to fail silently"; HFP and A2DP are mutually exclusive.)
+- Upgrade DAT SDK **0.9.0 → 1.0** -- done (bumped to 1.0.1, the current latest; changelog checked line by line, nothing it renamed/removed is used in this codebase).
+- **Audio choice -- decided: output only.** Speak through A2DP; no mic, no HFP, no voice commands in v1. This sidesteps the HFP bug below entirely (nothing here ever configures or releases HFP), gets better speech quality, and avoids the Gen 3 "device unavailable" failure mode since that's specifically triggered by releasing/re-setting-up HFP. Voice commands are deferred, not ruled out -- revisit if/when there's a real need for voice input, at which point the HFP sequencing rule below still applies.
+  - Deferred for later (not applicable to v1): with voice commands, configure and start HFP **before** starting the camera stream, wait for the route to settle, then start the stream. Keep HFP on across sessions. (Meta docs: starting the stream before HFP is ready "can cause the audio route to fail silently"; HFP and A2DP are mutually exclusive.)
 - **Known Gen 3 failure (field report, unconfirmed by Meta):** releasing and re-setting up HFP can cause "device unavailable" for about 7 minutes while the glasses still report connected. Only power-cycling the glasses clears it.
   - Settings → Glasses troubleshooting: after 2 consecutive "device unavailable" errors, stop retrying and tell the user: "Turn your glasses off and on again."
 - This may also explain the earlier "can't link glasses / stream fails" issue, if mic and stream were starting at the same time.
@@ -164,8 +163,8 @@ Brixi will be commercial (freemium), so:
 
 ## 10. Open items
 
-- **Phase 0 result:** toolkit still resolution (gates glasses pile mode).
-- **Audio decision:** voice commands yes/no (§7).
+- ~~**Phase 0 result:** toolkit still resolution (gates glasses pile mode).~~ Resolved: 1440x1080 (1080px short side) on all 5 captures tested -- below the 1500px target but not drastically, and recognition accuracy on real toolkit-resolution crops held up well (90%+ confident matches, ~100% correct item IDs by eye across 20 samples). Proceeding with glasses pile mode as specced rather than falling back to phone-only.
+- ~~**Audio decision:** voice commands yes/no (§7).~~ Resolved: output only. No HFP, no voice commands in v1.
 - **Batched email to Piotr (Brickognize), not yet sent:**
   1. Is multi-object detection coming in the new (non-legacy) API?
   2. Recommended crop padding and minimum crop size?
@@ -175,9 +174,13 @@ Brixi will be commercial (freemium), so:
 
 ## 11. Suggested build order
 
-1. Phase 0 diagnostics → Jake sends 3–4 photos → re-test in chat.
-2. SDK 1.0 upgrade + audio rules (§7).
-3. Part ID matching (§6). Unit-test it with `15210pb069`, `30562pb059`, `4460bpb002`, `2429c01`.
-4. Phone pile mode end to end (§4) with a debug screen that shows the crops.
+1. ~~Phase 0 diagnostics → Jake sends 3–4 photos → re-test in chat.~~ Done -- see §10.
+2. ~~SDK 1.0 upgrade + audio rules (§7).~~ Done -- see §7, §10.
+3. ~~Part ID matching (§6). Unit-test it with `15210pb069`, `30562pb059`, `4460bpb002`, `2429c01`.~~ Done -- `PartIDResolver.swift`, stripping logic verified against all four worked examples; live-confirmed on real scans of both the Road Sign (`15210pb069`) and Cylinder Quarter (`30562pb059`) pieces.
+4. Phone pile mode end to end (§4) with a debug screen that shows the crops. **Next up.**
 5. Glasses pile mode: burst, blur check, coaching.
 6. Acceptance run (§5) with the same 4-pile layout.
+
+**Not in the original plan, surfaced by live single-piece testing along the way** (both apply to pile mode too, since it reuses this same matching path):
+- Auto-find no longer hard-gates on Brickognize's predicted color (confirmed ~5% accurate against ~90%+ item-ID accuracy on 20 real pile crops) -- color is now only consulted to disambiguate when a part shape is needed in more than one color. See `BuildDetailViewModel.evaluate()`.
+- A second, higher confidence threshold (0.85, separate from `RecognitionService`'s base 0.7 "is this recognized at all" gate) controls whether a match is trusted silently vs. asking for a yes/no -- added after a real misidentification (a Road Sign piece read as a Tile 1x1) cleared 0.7 but was simply wrong, a case color couldn't have caught either.
