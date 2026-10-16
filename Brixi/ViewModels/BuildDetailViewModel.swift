@@ -11,20 +11,40 @@ import Foundation
 
 @MainActor
 final class BuildDetailViewModel: ObservableObject {
+  /// Confident enough to trust silently -- deliberately higher than
+  /// RecognitionService.defaultConfidenceThreshold (0.7), which only
+  /// gates whether an outcome counts as "recognized" at all. A piece can
+  /// clear 0.7 and still be the wrong shape: a small Road Sign Clip-on
+  /// 2x2 piece (gold diamond print) was misread as a Tile 1x1 with
+  /// Groove and cleared 0.7, live. Color can't backstop that kind of
+  /// error -- it was the wrong shape, not the wrong color of the right
+  /// one -- so the fix is asking rather than trusting in this band, not
+  /// leaning on a signal already shown to be unreliable.
+  /// No rigorous derivation behind this exact number; a reasonable
+  /// starting point given what's been seen in testing so far, not a
+  /// tuned optimum.
+  private static let autoFindConfidenceThreshold = 0.85
+
   /// Outcome of one "Scan for Parts" attempt, checked against this build's
   /// needed-parts list.
   enum ScanResult {
-    /// A confident item-ID match, recorded automatically. Color is not
-    /// part of this gate -- see docs/pile-mode-spec.md §4.4 and
-    /// matchNeededParts(for:): Brickognize's predicted color is far less
-    /// reliable than its item identification (confirmed empirically --
-    /// see the Phase 0 testing notes), so requiring it to match before
-    /// trusting an otherwise-confident recognition meant almost nothing
-    /// ever auto-found, even when the identification was correct.
+    /// A high-confidence item-ID match (see autoFindConfidenceThreshold),
+    /// recorded automatically. Color is not part of this gate -- see
+    /// docs/pile-mode-spec.md §4.4 and matchNeededParts(for:):
+    /// Brickognize's predicted color is far less reliable than its item
+    /// identification (confirmed empirically -- see the Phase 0 testing
+    /// notes), so requiring it to match before trusting an otherwise-
+    /// confident recognition meant almost nothing ever auto-found, even
+    /// when the identification was correct.
     case autoFound(NeededPart)
-    /// Either the item-match confidence itself was low, or the matched
-    /// part shape is needed in more than one color and color is the only
-    /// signal (weak as it is) that can tell them apart. Needs a human
+    /// Any of: the item-match confidence cleared RecognitionService's base
+    /// threshold but not autoFindConfidenceThreshold (confirmed live: a
+    /// small Road Sign piece misread as a Tile 1x1 cleared the base 0.7
+    /// gate but was simply wrong -- color wouldn't have caught that
+    /// either, since it was the wrong shape, not the wrong color of the
+    /// right shape); the matched part shape is needed in more than one
+    /// color and color is the only (weak) signal that can tell them
+    /// apart; or the outcome itself was low-confidence. Needs a human
     /// yes/no.
     case needsConfirmation(NeededPart, recognizedName: String)
     /// Recognized something, but it isn't on this set's needed-parts list.
@@ -187,6 +207,13 @@ final class BuildDetailViewModel: ObservableObject {
         // on, if it landed on one of the ones this build needs at all.
         let bestGuess = matches.first { $0.colorId == piece.colorId } ?? firstMatch
         return .needsConfirmation(bestGuess, recognizedName: piece.item.name)
+      }
+      guard piece.confidence >= Self.autoFindConfidenceThreshold else {
+        // Still a "recognized" outcome (cleared RecognitionService's base
+        // gate), just not confident enough to trust without a look --
+        // this band is where real misidentifications on small/decorated
+        // pieces showed up in testing.
+        return .needsConfirmation(firstMatch, recognizedName: piece.item.name)
       }
       markFound(firstMatch, delta: 1)
       return .autoFound(firstMatch)
