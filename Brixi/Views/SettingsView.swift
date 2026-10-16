@@ -15,6 +15,12 @@ struct SettingsView: View {
   @ObservedObject var viewModel: WearablesViewModel
 
   @State private var cameraAccess: WearablesViewModel.CameraAccess = .unknown
+  #if DEBUG
+  // Same UserDefaults key CaptureDiagnostics reads -- Phase 0 of pile mode
+  // (docs/pile-mode-spec.md): confirms the glasses' actual still-capture
+  // resolution before building anything that depends on it.
+  @AppStorage("com.brixi.debug.saveCaptures") private var saveCaptures = false
+  #endif
 
   var body: some View {
     NavigationStack {
@@ -78,6 +84,16 @@ struct SettingsView: View {
             debugLogView
           }
         }
+
+        #if DEBUG
+        Section {
+          Toggle("Save Captures", isOn: $saveCaptures)
+        } header: {
+          Text("Developer")
+        } footer: {
+          Text("Saves every scan photo (glasses or phone) to your Photos library exactly as captured, with its real pixel dimensions logged -- for checking what resolution the camera pipeline actually produces.")
+        }
+        #endif
 
         Section("Voice") {
           Text("Voice commands aren't available yet.")

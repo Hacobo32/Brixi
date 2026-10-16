@@ -33,6 +33,9 @@ final class BuildDetailViewModel: ObservableObject {
   @Published var isScanning = false
   @Published var errorMessage: String?
   @Published var scanResult: ScanResult?
+  /// Set after every capture when the "Save Captures" debug toggle
+  /// (Settings) is on -- see CaptureDiagnostics. nil the rest of the time.
+  @Published private(set) var lastCaptureDiagnostics: CaptureDiagnosticsInfo?
 
   let setName: String
 
@@ -106,6 +109,7 @@ final class BuildDetailViewModel: ObservableObject {
     Task {
       do {
         let imageData = try await glassesFrameSource.captureOneFrame()
+        lastCaptureDiagnostics = await CaptureDiagnostics.record(imageData, source: .glasses)
         await runRecognition(on: imageData)
       } catch {
         errorMessage = error.localizedDescription
@@ -123,6 +127,7 @@ final class BuildDetailViewModel: ObservableObject {
     errorMessage = nil
     scanResult = nil
     Task {
+      lastCaptureDiagnostics = await CaptureDiagnostics.record(imageData, source: .phone)
       await runRecognition(on: imageData)
       isScanning = false
     }

@@ -73,6 +73,12 @@
 	<array>
 		<string>_bonjour._tcp</string>
 	</array>
+	<!-- Add-only access for the debug "Save Captures" toggle (Settings),
+	     which writes raw scan photos to Photos unmodified to check the
+	     capture pipeline's actual resolution; see
+	     docs/pile-mode-spec.md, Phase 0. -->
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>Needed to save scan photos for checking camera resolution.</string>
 
 	<!-- Populated at build time from Brixi/Config/Secrets.xcconfig (gitignored;
 	     see Brixi/Config/Secrets.example.xcconfig). Empty if that file doesn't exist. -->

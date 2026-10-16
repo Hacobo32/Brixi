@@ -76,6 +76,16 @@ struct BuildDetailView: View {
             }
           }
 
+          #if DEBUG
+          if let diagnostics = viewModel.lastCaptureDiagnostics {
+            Section {
+              Text("📷 \(diagnostics.summary)")
+                .font(.caption.monospaced())
+                .foregroundStyle(.secondary)
+            }
+          }
+          #endif
+
           Section {
             ProgressView(value: Double(build.totalFound), total: Double(max(build.totalNeeded, 1)))
             Text("\(build.totalFound) of \(build.totalNeeded) parts found")
