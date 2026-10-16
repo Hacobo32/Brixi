@@ -24,6 +24,9 @@ struct PileSegmentationTestView: View {
             overlayImage(result)
             Text("\(result.pieces.count) piece\(result.pieces.count == 1 ? "" : "s") detected")
               .font(.headline)
+            if !viewModel.cropThumbnails.isEmpty {
+              cropStrip(viewModel.cropThumbnails)
+            }
           } else if let imageData = viewModel.selectedImageData, let uiImage = UIImage(data: imageData) {
             Image(uiImage: uiImage)
               .resizable()
@@ -90,10 +93,20 @@ struct PileSegmentationTestView: View {
           .resizable()
           .frame(width: displaySize.width, height: displaySize.height)
 
-        ForEach(Array(result.pieces.enumerated()), id: \.offset) { _, piece in
+        ForEach(Array(result.pieces.enumerated()), id: \.offset) { index, piece in
           Rectangle()
             .stroke(.red, lineWidth: 2)
             .frame(width: piece.rect.width * scale, height: piece.rect.height * scale)
+            .overlay(alignment: .topLeading) {
+              // Matches the crop strip's numbering below, so an
+              // overlapping cluster here can be cross-checked against
+              // what each individual crop actually contains.
+              Text("\(index + 1)")
+                .font(.caption2.bold())
+                .foregroundStyle(.white)
+                .padding(2)
+                .background(.red)
+            }
             .offset(x: piece.rect.minX * scale, y: piece.rect.minY * scale)
         }
       }
@@ -101,6 +114,32 @@ struct PileSegmentationTestView: View {
     }
     .aspectRatio(imageSize.width / imageSize.height, contentMode: .fit)
     .frame(maxHeight: 400)
+  }
+
+  /// Shows what's actually inside each detected box, numbered to match
+  /// the overlay -- the only way to tell "two separate, correctly-boxed
+  /// pieces whose generous padding happens to overlap" apart from "one
+  /// piece's mask fractured into several boxes" (both look identical in
+  /// the overlay alone).
+  private func cropStrip(_ thumbnails: [UIImage]) -> some View {
+    ScrollView(.horizontal, showsIndicators: true) {
+      LazyHStack(spacing: 8) {
+        ForEach(Array(thumbnails.enumerated()), id: \.offset) { index, thumbnail in
+          VStack(spacing: 4) {
+            Image(uiImage: thumbnail)
+              .resizable()
+              .scaledToFit()
+              .frame(width: 80, height: 80)
+              .background(Color(.systemGray5))
+              .clipShape(RoundedRectangle(cornerRadius: 8))
+            Text("\(index + 1)")
+              .font(.caption2)
+              .foregroundStyle(.secondary)
+          }
+        }
+      }
+      .padding(.horizontal, 4)
+    }
   }
 }
 
