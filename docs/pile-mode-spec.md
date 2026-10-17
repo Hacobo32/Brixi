@@ -96,7 +96,7 @@ Future (not v1): replace this with a trained one-class "brick" detector (Core ML
 - Cache results by crop hash for the session.
 - Note: `/predict/parts/` is marked "legacy" in Brickognize's OpenAPI. Keep it behind one small client so we can swap endpoints.
 
-**Done** -- `PileRecognitionBatcher.swift`: one crop at a time (a paced sequential loop already hits the ~10s/40-piece target at 4 req/s, without a separate concurrency pool's rate-limit risk), session-scoped cache keyed by a SHA-256 crop hash, one retry before giving up on a crop. `BrickognizeClient.predictParts` grew a `topK` param so pile mode can ask for `top_k_items=50` while single-piece mode keeps the server default. Wired into the debug screen ("Recognize All Crops"), which shows each crop's top guess + score and a "Checking N of M…" progress line, for validating real request/response shapes before §4.4's matching logic is built on top. Not yet validated against a live pile, since Brickognize is unreachable from this sandbox (policy-blocked) -- needs an on-device run.
+**Done** -- `PileRecognitionBatcher.swift`: one crop at a time (a paced sequential loop already hits the ~10s/40-piece target at 4 req/s, without a separate concurrency pool's rate-limit risk), session-scoped cache keyed by a SHA-256 crop hash, one retry before giving up on a crop. `BrickognizeClient.predictParts` grew a `topK` param so pile mode can ask for `top_k_items=50` while single-piece mode keeps the server default. Wired into the debug screen ("Recognize All Crops"), which shows each crop's top guess + score and a "Checking N of M…" progress line. **Validated on-device** against a real 19-piece pile: every crop returned a plausible top guess, scores clustering 0.75-0.90 (e.g. the mesh/grille piece correctly came back "Plate, Modified 8x8 Lattice," the cylinder rod as "Support 1x6 Solid Pillar"). An earlier run looked like a total failure (every crop blank, "Checking N of N" stuck on screen) -- that was a debug-screen bug (progress never cleared) compounded by testing a pre-fix build, not a Brickognize or pacing problem; see the two small follow-up commits after this milestone's main one.
 
 ### 4.4 Check against the set list
 - Load the set inventory for the selected build (existing Rebrickable data).
@@ -184,7 +184,7 @@ Brixi will be commercial (freemium), so:
 4. Phone pile mode end to end (§4) with a debug screen that shows the crops.
    - ~~Find pieces (§4.2), validated against real on-device captures.~~ Done -- see §4.2's own note. Clean single-box-per-piece results once pieces have real gaps between them; touching pieces still merge into one box, matching the spec's own known limitation (§4.2's "no touching pieces" coaching note), not a bug in the port.
    - ~~Capture: burst + sharpest-frame pick (§4.1).~~ Done -- see §4.1's own note. Blur-reject threshold still open, pending real tuning data.
-   - ~~Name pieces (§4.3, batched Brickognize).~~ Done -- see §4.3's own note. Needs an on-device run before moving on, since Brickognize can't be reached from the dev sandbox.
+   - ~~Name pieces (§4.3, batched Brickognize).~~ Done and validated on-device -- see §4.3's own note.
    - Check against set list (§4.4) -- **next up.**
    - Output UI (§4.5).
 5. Glasses pile mode: burst, blur check, coaching. (Burst capture itself already shared between phone and glasses as of §4.1 -- this item is now mainly the spoken coaching + countdown + lighting hint.)
