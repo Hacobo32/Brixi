@@ -42,7 +42,7 @@ private extension View {
 @main
 struct BrixiApp: App {
   @StateObject private var wearablesViewModel: WearablesViewModel
-  @StateObject private var buildStore = BuildProjectStore()
+  @StateObject private var buildStore: BuildProjectStore
   @State private var showRegistration = false
   @State private var showSetPicker = false
   @State private var showSettings = false
@@ -57,7 +57,7 @@ struct BrixiApp: App {
   @State private var showPileSegmentationTest = false
   @StateObject private var mockDeviceKitViewModel = MockDeviceKitViewModel(mockDeviceKit: MockDeviceKit.shared)
   @StateObject private var recognitionTestViewModel = RecognitionTestViewModel()
-  @StateObject private var pileSegmentationTestViewModel = PileSegmentationTestViewModel()
+  @StateObject private var pileSegmentationTestViewModel: PileSegmentationTestViewModel
   #endif
 
   init() {
@@ -72,8 +72,22 @@ struct BrixiApp: App {
 
     let catalog = try? CatalogDatabase()
     self.catalog = catalog
-    self.rebrickableClient = RebrickableClient.fromInfoPlist()
+    let rebrickableClient = RebrickableClient.fromInfoPlist()
+    self.rebrickableClient = rebrickableClient
     self.setPickerViewModel = SetPickerViewModel(catalog: catalog)
+
+    let buildStore = BuildProjectStore()
+    self._buildStore = StateObject(wrappedValue: buildStore)
+    #if DEBUG
+    // Reads the same active-build pointer "Scan for Parts" uses (§4.4),
+    // so the debug screen's crop-matching can be checked against whatever
+    // set is actually active without needing its own set picker.
+    self._pileSegmentationTestViewModel = StateObject(wrappedValue: PileSegmentationTestViewModel(
+      catalog: catalog,
+      rebrickableClient: rebrickableClient,
+      buildStore: buildStore
+    ))
+    #endif
   }
 
   var body: some Scene {

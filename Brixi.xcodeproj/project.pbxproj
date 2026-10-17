@@ -48,6 +48,8 @@
 		BF0000000000000000000162 /* ImageDecoding.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF0000000000000000000163 /* ImageDecoding.swift */; };
 		BF0000000000000000000164 /* BlurDetector.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF0000000000000000000165 /* BlurDetector.swift */; };
 		BF0000000000000000000166 /* PileRecognitionBatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF0000000000000000000167 /* PileRecognitionBatcher.swift */; };
+		BF0000000000000000000168 /* NeededPartMatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF0000000000000000000169 /* NeededPartMatcher.swift */; };
+		BF0000000000000000000170 /* PileMatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF0000000000000000000171 /* PileMatcher.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -93,6 +95,8 @@
 		BF0000000000000000000163 /* ImageDecoding.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageDecoding.swift; sourceTree = "<group>"; };
 		BF0000000000000000000165 /* BlurDetector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlurDetector.swift; sourceTree = "<group>"; };
 		BF0000000000000000000167 /* PileRecognitionBatcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PileRecognitionBatcher.swift; sourceTree = "<group>"; };
+		BF0000000000000000000169 /* NeededPartMatcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NeededPartMatcher.swift; sourceTree = "<group>"; };
+		BF0000000000000000000171 /* PileMatcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PileMatcher.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -208,6 +212,8 @@
 				BF0000000000000000000163 /* ImageDecoding.swift */,
 				BF0000000000000000000165 /* BlurDetector.swift */,
 				BF0000000000000000000167 /* PileRecognitionBatcher.swift */,
+				BF0000000000000000000169 /* NeededPartMatcher.swift */,
+				BF0000000000000000000171 /* PileMatcher.swift */,
 			);
 			path = Recognition;
 			sourceTree = "<group>";
@@ -351,6 +357,8 @@
 				BF0000000000000000000162 /* ImageDecoding.swift in Sources */,
 				BF0000000000000000000164 /* BlurDetector.swift in Sources */,
 				BF0000000000000000000166 /* PileRecognitionBatcher.swift in Sources */,
+				BF0000000000000000000168 /* NeededPartMatcher.swift in Sources */,
+				BF0000000000000000000170 /* PileMatcher.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

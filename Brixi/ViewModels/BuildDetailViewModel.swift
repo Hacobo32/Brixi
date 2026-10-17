@@ -232,24 +232,15 @@ final class BuildDetailViewModel: ObservableObject {
     }
   }
 
-  /// Matches a recognized item against this build's needed-parts list.
-  /// Tries each of PartIDResolver's ID candidates (raw ID, shape-stripped
-  /// base ID, live Rebrickable lookup -- see PartIDResolver, per
-  /// docs/pile-mode-spec.md §6) against the catalog's part family in
-  /// order, and returns every needed-parts row the first matching
-  /// candidate hits -- more than one means this part shape is needed in
-  /// multiple colors, which the caller uses to decide whether color needs
-  /// asking about.
+  /// Matches a recognized item against this build's needed-parts list --
+  /// see NeededPartMatcher for the BrickLink<->Rebrickable reconciliation
+  /// (docs/pile-mode-spec.md §6) shared with pile mode's PileMatcher.
+  /// More than one result means this part shape is needed in multiple
+  /// colors, which the caller uses to decide whether color needs asking
+  /// about.
   private func matchNeededParts(for item: BrickognizeItem) async -> [NeededPart] {
     guard let catalog, let build else { return [] }
-    for candidate in await partIDResolver.candidates(for: item) {
-      let family = catalog.partFamily(partNum: candidate)
-      let matches = build.parts.filter { family.contains($0.partNum) }
-      if !matches.isEmpty {
-        return matches
-      }
-    }
-    return []
+    return await NeededPartMatcher.match(item, in: build.parts, catalog: catalog, resolver: partIDResolver)
   }
 
   /// Collapses Rebrickable's per-line-item response into one entry per

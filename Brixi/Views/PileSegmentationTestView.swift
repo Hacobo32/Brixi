@@ -28,7 +28,11 @@ struct PileSegmentationTestView: View {
               burstScoreRow(viewModel.burstScores, picked: viewModel.pickedBurstIndex)
             }
             if !viewModel.cropThumbnails.isEmpty {
-              cropStrip(viewModel.cropThumbnails, results: viewModel.recognitionResults)
+              cropStrip(
+                viewModel.cropThumbnails,
+                results: viewModel.recognitionResults,
+                classifications: viewModel.classifications
+              )
               MockDeviceKitButton(
                 "Recognize All Crops",
                 disabled: viewModel.isRecognizing || viewModel.isProcessing
@@ -39,6 +43,9 @@ struct PileSegmentationTestView: View {
                 Text("Checking \(progress.completed) of \(progress.total)…")
                   .font(.caption)
                   .foregroundStyle(.secondary)
+              }
+              if let tally = viewModel.matchTally {
+                matchSummary(tally)
               }
             }
           } else if let imageData = viewModel.selectedImageData, let uiImage = UIImage(data: imageData) {
@@ -163,9 +170,13 @@ struct PileSegmentationTestView: View {
   /// pieces whose generous padding happens to overlap" apart from "one
   /// piece's mask fractured into several boxes" (both look identical in
   /// the overlay alone). Once `recognizeCrops()` has run, each thumbnail
-  /// also shows Brickognize's top guess and score, so §4.3's name-pieces
-  /// step can be checked against real crops rather than guessed at.
-  private func cropStrip(_ thumbnails: [UIImage], results: [BrickognizeSearchResult?]) -> some View {
+  /// also shows Brickognize's top guess and score, and -- once matched
+  /// against the active build (§4.4) -- a Found/Maybe badge.
+  private func cropStrip(
+    _ thumbnails: [UIImage],
+    results: [BrickognizeSearchResult?],
+    classifications: [PileMatchClassification?]
+  ) -> some View {
     ScrollView(.horizontal, showsIndicators: true) {
       LazyHStack(alignment: .top, spacing: 8) {
         ForEach(Array(thumbnails.enumerated()), id: \.offset) { index, thumbnail in
@@ -188,12 +199,40 @@ struct PileSegmentationTestView: View {
                 .font(.caption2.monospacedDigit())
                 .foregroundStyle(.secondary)
             }
+            if index < classifications.count, let classification = classifications[index] {
+              classificationBadge(classification)
+            }
           }
           .frame(width: 80)
         }
       }
       .padding(.horizontal, 4)
     }
+  }
+
+  @ViewBuilder
+  private func classificationBadge(_ classification: PileMatchClassification) -> some View {
+    switch classification {
+    case .found:
+      Text("Found").font(.caption2.bold()).foregroundStyle(.green)
+    case .maybe:
+      Text("Maybe").font(.caption2.bold()).foregroundStyle(.yellow)
+    case .ignore:
+      EmptyView()
+    }
+  }
+
+  /// Rolled-up §4.4 result for the whole batch against the active build's
+  /// needed-parts list -- the eventual output screen's numbers (§4.5),
+  /// shown here in debug form before there's a dedicated results UI.
+  private func matchSummary(_ tally: PileMatcher.Tally) -> some View {
+    let foundTotal = tally.foundCounts.values.reduce(0, +)
+    return VStack(alignment: .leading, spacing: 2) {
+      Text("Matched against active build: \(foundTotal) found, \(tally.maybeParts.count) maybe, \(tally.missing.count) still missing")
+        .font(.caption)
+        .foregroundStyle(.secondary)
+    }
+    .frame(maxWidth: .infinity, alignment: .leading)
   }
 }
 

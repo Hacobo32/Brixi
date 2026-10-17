@@ -108,6 +108,8 @@ Future (not v1): replace this with a trained one-class "brick" detector (Core ML
 - Use `predict_color` to tie-break when the set has the same part in multiple colours. Treat colour as a hint, not a hard filter: warm room light shifted tan toward orange in phone tests.
 - Count found pieces against the set's required quantities, and track what's still missing.
 
+**Done** -- `PileMatcher.swift`: classifies one crop exactly as above (found requires the *top* item specifically at ≥0.75; maybe is any of the top 3 at ≥0.50), walking up to 3 ranked items only (the rest of the returned top-50 isn't needed once rank 3 is past, since scores only decrease from there). Color ties broken the same way single-piece mode already does. `tally(_:against:)` rolls a batch of classifications into found counts, maybe parts, and a missing list -- "missing" also accounts for quantities already found in a prior single-piece scan (`NeededPart.quantityFound`), not just this one pile scan. The BrickLink<->Rebrickable ID matching itself (§6) was already shared logic; factored the match-against-needed-parts step out of `BuildDetailViewModel` into `NeededPartMatcher.swift` so both modes use the identical path rather than two copies. Wired into the debug screen: each crop thumbnail gets a Found/Maybe badge, with a one-line summary ("N found, N maybe, N still missing") underneath, matched against whatever build is currently active (`BuildProjectStore.activeSet`) -- pile mode doesn't have its own set picker yet (that's Milestone 6).
+
 ### 4.5 Output
 - **Screen:** the captured photo with boxes drawn on found pieces (and dashed boxes on "maybe" pieces), labelled with the part name. Below that, a list: found / maybe / still missing.
 - **Voice:** short. "Found 6 pieces from your set. Top left: 2 by 6 tan plate…" Read the found pieces only. Offer "Say 'next' for more" only if voice input exists (§7).
@@ -185,8 +187,8 @@ Brixi will be commercial (freemium), so:
    - ~~Find pieces (§4.2), validated against real on-device captures.~~ Done -- see §4.2's own note. Clean single-box-per-piece results once pieces have real gaps between them; touching pieces still merge into one box, matching the spec's own known limitation (§4.2's "no touching pieces" coaching note), not a bug in the port.
    - ~~Capture: burst + sharpest-frame pick (§4.1).~~ Done -- see §4.1's own note. Blur-reject threshold still open, pending real tuning data.
    - ~~Name pieces (§4.3, batched Brickognize).~~ Done and validated on-device -- see §4.3's own note.
-   - Check against set list (§4.4) -- **next up.**
-   - Output UI (§4.5).
+   - ~~Check against set list (§4.4).~~ Done -- see §4.4's own note. Needs an on-device run against the active build to confirm real found/maybe counts look right.
+   - Output UI (§4.5) -- **next up.**
 5. Glasses pile mode: burst, blur check, coaching. (Burst capture itself already shared between phone and glasses as of §4.1 -- this item is now mainly the spoken coaching + countdown + lighting hint.)
 6. Acceptance run (§5) with the same 4-pile layout.
 

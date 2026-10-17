@@ -38,6 +38,12 @@ final class PileSegmentationTestViewModel: ObservableObject {
   @Published var recognitionResults: [BrickognizeSearchResult?] = []
   @Published var recognitionProgress: RecognitionProgress?
   @Published var isRecognizing = false
+  /// One slot per `cropThumbnails`, same order, filled in alongside
+  /// `recognitionResults` once a build is active to match against (§4.4).
+  /// nil either means "not classified yet" or "no active build to check
+  /// against" -- the view only shows a badge once this is non-nil.
+  @Published var classifications: [PileMatchClassification?] = []
+  @Published var matchTally: PileMatcher.Tally?
   @Published var errorMessage: String?
 
   struct RecognitionProgress {
@@ -48,10 +54,29 @@ final class PileSegmentationTestViewModel: ObservableObject {
   private let cameraController = CameraCaptureController()
   private let phoneCameraSource = PhoneCameraFrameSource()
   private let recognitionBatcher = PileRecognitionBatcher()
+  private let catalog: CatalogDatabase?
+  private let partIDResolver: PartIDResolver
+  private let buildStore: BuildProjectStore?
   /// JPEG bytes for each `cropThumbnails` entry, same order -- kept
   /// alongside the UIImage thumbnails (rather than re-encoded on demand)
   /// since recognizeCrops() needs the raw bytes to send to Brickognize.
   private var cropData: [Data] = []
+
+  /// The build "Scan for Parts" currently checks against, same source as
+  /// single-piece mode (BuildProjectStore.activeSet) -- pile mode isn't
+  /// wired into BuildDetailView yet (§11, Milestone 6), so this debug
+  /// screen reads the same active-build pointer directly rather than
+  /// needing its own set picker.
+  private var activeBuild: BuildProject? {
+    guard let buildStore, let activeSet = buildStore.activeSet else { return nil }
+    return buildStore.build(setNum: activeSet.setNum)
+  }
+
+  init(catalog: CatalogDatabase?, rebrickableClient: RebrickableClient?, buildStore: BuildProjectStore?) {
+    self.catalog = catalog
+    self.partIDResolver = PartIDResolver(client: rebrickableClient)
+    self.buildStore = buildStore
+  }
 
   func selectImage(_ data: Data) {
     selectedImageData = data
@@ -62,6 +87,8 @@ final class PileSegmentationTestViewModel: ObservableObject {
     pickedBurstIndex = nil
     recognitionResults = []
     recognitionProgress = nil
+    classifications = []
+    matchTally = nil
     errorMessage = nil
   }
 
@@ -76,16 +103,23 @@ final class PileSegmentationTestViewModel: ObservableObject {
     pickedBurstIndex = nil
     recognitionResults = []
     recognitionProgress = nil
+    classifications = []
+    matchTally = nil
     Task { await finishDetection(on: data) }
   }
 
   /// Sends each crop to Brickognize in turn (§4.3), paced by
-  /// PileRecognitionBatcher, updating progress as each one resolves.
+  /// PileRecognitionBatcher, updating progress as each one resolves. Once
+  /// every crop has an answer, classifies each against the active build's
+  /// needed-parts list (§4.4) and tallies the batch -- skipped (left all
+  /// nil) if there's no catalog or no active build to check against.
   func recognizeCrops() {
     guard !cropData.isEmpty, !isRecognizing else { return }
     isRecognizing = true
     recognitionResults = Array(repeating: nil, count: cropData.count)
     recognitionProgress = RecognitionProgress(completed: 0, total: cropData.count)
+    classifications = Array(repeating: nil, count: cropData.count)
+    matchTally = nil
     Task {
       for (index, crop) in cropData.enumerated() {
         let recognized = await recognitionBatcher.recognize(crop: crop)
@@ -103,8 +137,25 @@ final class PileSegmentationTestViewModel: ObservableObject {
       if recognitionResults.allSatisfy({ $0 == nil }) {
         let detail = recognitionBatcher.lastErrorDescription ?? "no response"
         errorMessage = "All \(cropData.count) crops failed to recognize (\(detail))."
+        return
       }
+      await classifyAgainstActiveBuild()
     }
+  }
+
+  private func classifyAgainstActiveBuild() async {
+    guard let catalog, let build = activeBuild else { return }
+    var results: [PileMatchClassification?] = []
+    results.reserveCapacity(recognitionResults.count)
+    for recognized in recognitionResults {
+      guard let recognized else {
+        results.append(nil)
+        continue
+      }
+      results.append(await PileMatcher.classify(recognized, against: build.parts, catalog: catalog, resolver: partIDResolver))
+    }
+    classifications = results
+    matchTally = PileMatcher.tally(results.compactMap { $0 }, against: build.parts)
   }
 
   /// Bursts 3 frames from the glasses (or a Mock Device Kit feed), picks
@@ -157,6 +208,8 @@ final class PileSegmentationTestViewModel: ObservableObject {
     pickedBurstIndex = nil
     recognitionResults = []
     recognitionProgress = nil
+    classifications = []
+    matchTally = nil
   }
 
   private func finishBurst(_ frames: [Data]) async {
