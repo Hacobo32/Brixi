@@ -28,7 +28,18 @@ struct PileSegmentationTestView: View {
               burstScoreRow(viewModel.burstScores, picked: viewModel.pickedBurstIndex)
             }
             if !viewModel.cropThumbnails.isEmpty {
-              cropStrip(viewModel.cropThumbnails)
+              cropStrip(viewModel.cropThumbnails, results: viewModel.recognitionResults)
+              MockDeviceKitButton(
+                "Recognize All Crops",
+                disabled: viewModel.isRecognizing || viewModel.isProcessing
+              ) {
+                viewModel.recognizeCrops()
+              }
+              if let progress = viewModel.recognitionProgress {
+                Text("Checking \(progress.completed) of \(progress.total)…")
+                  .font(.caption)
+                  .foregroundStyle(.secondary)
+              }
             }
           } else if let imageData = viewModel.selectedImageData, let uiImage = UIImage(data: imageData) {
             Image(uiImage: uiImage)
@@ -151,10 +162,12 @@ struct PileSegmentationTestView: View {
   /// the overlay -- the only way to tell "two separate, correctly-boxed
   /// pieces whose generous padding happens to overlap" apart from "one
   /// piece's mask fractured into several boxes" (both look identical in
-  /// the overlay alone).
-  private func cropStrip(_ thumbnails: [UIImage]) -> some View {
+  /// the overlay alone). Once `recognizeCrops()` has run, each thumbnail
+  /// also shows Brickognize's top guess and score, so §4.3's name-pieces
+  /// step can be checked against real crops rather than guessed at.
+  private func cropStrip(_ thumbnails: [UIImage], results: [BrickognizeSearchResult?]) -> some View {
     ScrollView(.horizontal, showsIndicators: true) {
-      LazyHStack(spacing: 8) {
+      LazyHStack(alignment: .top, spacing: 8) {
         ForEach(Array(thumbnails.enumerated()), id: \.offset) { index, thumbnail in
           VStack(spacing: 4) {
             Image(uiImage: thumbnail)
@@ -166,7 +179,17 @@ struct PileSegmentationTestView: View {
             Text("\(index + 1)")
               .font(.caption2)
               .foregroundStyle(.secondary)
+            if index < results.count, let topItem = results[index]?.items.first {
+              Text(topItem.name)
+                .font(.caption2)
+                .lineLimit(2)
+                .multilineTextAlignment(.center)
+              Text(String(format: "%.2f", topItem.score))
+                .font(.caption2.monospacedDigit())
+                .foregroundStyle(.secondary)
+            }
           }
+          .frame(width: 80)
         }
       }
       .padding(.horizontal, 4)

@@ -32,17 +32,36 @@ final class PileSegmentationTestViewModel: ObservableObject {
   /// against real numbers instead of guessed.
   @Published var burstScores: [Double] = []
   @Published var pickedBurstIndex: Int?
+  /// One slot per `cropThumbnails`, same order. Filled in as
+  /// `recognizeCrops()` works through the batch -- nil means "not
+  /// recognized yet" while running, or "gave up after a retry" once done.
+  @Published var recognitionResults: [BrickognizeSearchResult?] = []
+  @Published var recognitionProgress: RecognitionProgress?
+  @Published var isRecognizing = false
   @Published var errorMessage: String?
+
+  struct RecognitionProgress {
+    let completed: Int
+    let total: Int
+  }
 
   private let cameraController = CameraCaptureController()
   private let phoneCameraSource = PhoneCameraFrameSource()
+  private let recognitionBatcher = PileRecognitionBatcher()
+  /// JPEG bytes for each `cropThumbnails` entry, same order -- kept
+  /// alongside the UIImage thumbnails (rather than re-encoded on demand)
+  /// since recognizeCrops() needs the raw bytes to send to Brickognize.
+  private var cropData: [Data] = []
 
   func selectImage(_ data: Data) {
     selectedImageData = data
     result = nil
     cropThumbnails = []
+    cropData = []
     burstScores = []
     pickedBurstIndex = nil
+    recognitionResults = []
+    recognitionProgress = nil
     errorMessage = nil
   }
 
@@ -52,9 +71,29 @@ final class PileSegmentationTestViewModel: ObservableObject {
     errorMessage = nil
     result = nil
     cropThumbnails = []
+    cropData = []
     burstScores = []
     pickedBurstIndex = nil
+    recognitionResults = []
+    recognitionProgress = nil
     Task { await finishDetection(on: data) }
+  }
+
+  /// Sends each crop to Brickognize in turn (§4.3), paced by
+  /// PileRecognitionBatcher, updating progress as each one resolves.
+  func recognizeCrops() {
+    guard !cropData.isEmpty, !isRecognizing else { return }
+    isRecognizing = true
+    recognitionResults = Array(repeating: nil, count: cropData.count)
+    recognitionProgress = RecognitionProgress(completed: 0, total: cropData.count)
+    Task {
+      for (index, crop) in cropData.enumerated() {
+        let recognized = await recognitionBatcher.recognize(crop: crop)
+        recognitionResults[index] = recognized
+        recognitionProgress = RecognitionProgress(completed: index + 1, total: cropData.count)
+      }
+      isRecognizing = false
+    }
   }
 
   /// Bursts 3 frames from the glasses (or a Mock Device Kit feed), picks
@@ -102,8 +141,11 @@ final class PileSegmentationTestViewModel: ObservableObject {
     errorMessage = nil
     result = nil
     cropThumbnails = []
+    cropData = []
     burstScores = []
     pickedBurstIndex = nil
+    recognitionResults = []
+    recognitionProgress = nil
   }
 
   private func finishBurst(_ frames: [Data]) async {
@@ -130,11 +172,11 @@ final class PileSegmentationTestViewModel: ObservableObject {
     }.value
     if let detected {
       result = detected
-      cropThumbnails = await Task.detached(priority: .userInitiated) {
-        detected.pieces.compactMap { piece in
-          PileSegmenter.crop(piece, from: detected.image).map { UIImage(cgImage: $0) }
-        }
+      let crops = await Task.detached(priority: .userInitiated) {
+        detected.pieces.compactMap { piece in PileSegmenter.crop(piece, from: detected.image) }
       }.value
+      cropThumbnails = crops.map { UIImage(cgImage: $0) }
+      cropData = cropThumbnails.compactMap { $0.jpegData(compressionQuality: 0.9) }
     } else {
       errorMessage = "Couldn't process that image."
     }

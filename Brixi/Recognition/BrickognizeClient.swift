@@ -102,10 +102,23 @@ final class BrickognizeClient {
   }
 
   /// Identifies a LEGO part from a single image. `predictColor` also asks
-  /// for color candidates in the response's `colors` field.
-  func predictParts(imageData: Data, fileName: String = "capture.jpg", predictColor: Bool = true) async throws -> BrickognizeSearchResult {
+  /// for color candidates in the response's `colors` field. `topK`, when
+  /// given, caps how many ranked `items` come back -- pile mode (§4.3)
+  /// asks for 50 so §4.4's matcher has enough candidates to walk past
+  /// Brickognize's top guess; single-piece mode leaves it at the
+  /// server's own default by passing nil.
+  func predictParts(
+    imageData: Data,
+    fileName: String = "capture.jpg",
+    predictColor: Bool = true,
+    topK: Int? = nil
+  ) async throws -> BrickognizeSearchResult {
     var components = URLComponents(url: baseURL.appendingPathComponent("predict/parts/"), resolvingAgainstBaseURL: false)!
-    components.queryItems = [URLQueryItem(name: "predict_color", value: predictColor ? "true" : "false")]
+    var queryItems = [URLQueryItem(name: "predict_color", value: predictColor ? "true" : "false")]
+    if let topK {
+      queryItems.append(URLQueryItem(name: "top_k_items", value: String(topK)))
+    }
+    components.queryItems = queryItems
     guard let url = components.url else { throw ClientError.invalidResponse }
 
     let boundary = "Boundary-\(UUID().uuidString)"

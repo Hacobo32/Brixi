@@ -96,6 +96,8 @@ Future (not v1): replace this with a trained one-class "brick" detector (Core ML
 - Cache results by crop hash for the session.
 - Note: `/predict/parts/` is marked "legacy" in Brickognize's OpenAPI. Keep it behind one small client so we can swap endpoints.
 
+**Done** -- `PileRecognitionBatcher.swift`: one crop at a time (a paced sequential loop already hits the ~10s/40-piece target at 4 req/s, without a separate concurrency pool's rate-limit risk), session-scoped cache keyed by a SHA-256 crop hash, one retry before giving up on a crop. `BrickognizeClient.predictParts` grew a `topK` param so pile mode can ask for `top_k_items=50` while single-piece mode keeps the server default. Wired into the debug screen ("Recognize All Crops"), which shows each crop's top guess + score and a "Checking N of M…" progress line, for validating real request/response shapes before §4.4's matching logic is built on top. Not yet validated against a live pile, since Brickognize is unreachable from this sandbox (policy-blocked) -- needs an on-device run.
+
 ### 4.4 Check against the set list
 - Load the set inventory for the selected build (existing Rebrickable data).
 - For each crop, walk the top-50 items. A crop **matches** a set part if any returned ID resolves to a set part (see §6).
@@ -182,7 +184,8 @@ Brixi will be commercial (freemium), so:
 4. Phone pile mode end to end (§4) with a debug screen that shows the crops.
    - ~~Find pieces (§4.2), validated against real on-device captures.~~ Done -- see §4.2's own note. Clean single-box-per-piece results once pieces have real gaps between them; touching pieces still merge into one box, matching the spec's own known limitation (§4.2's "no touching pieces" coaching note), not a bug in the port.
    - ~~Capture: burst + sharpest-frame pick (§4.1).~~ Done -- see §4.1's own note. Blur-reject threshold still open, pending real tuning data.
-   - Name pieces (§4.3, batched Brickognize) and check against set list (§4.4) -- **next up.**
+   - ~~Name pieces (§4.3, batched Brickognize).~~ Done -- see §4.3's own note. Needs an on-device run before moving on, since Brickognize can't be reached from the dev sandbox.
+   - Check against set list (§4.4) -- **next up.**
    - Output UI (§4.5).
 5. Glasses pile mode: burst, blur check, coaching. (Burst capture itself already shared between phone and glasses as of §4.1 -- this item is now mainly the spoken coaching + countdown + lighting hint.)
 6. Acceptance run (§5) with the same 4-pile layout.
