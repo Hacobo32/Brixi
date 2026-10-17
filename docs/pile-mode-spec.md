@@ -57,8 +57,8 @@ Build:
 ## 4. Phase 1 — Pile scan flow
 
 ### 4.1 Capture
-- **Burst:** take 3 frames about 150 ms apart. Score each with the variance of the Laplacian on a grayscale downscale (vImage / Accelerate). Keep the sharpest.
-- **Blur reject:** if even the best frame is below a threshold (tune from test photos), don't scan. Coach the user instead: "Hold still and lean in a little."
+- **Burst:** take 3 frames about 150 ms apart. Score each with the variance of the Laplacian on a grayscale downscale (vImage / Accelerate). Keep the sharpest. -- Done: `BlurDetector.swift` (hand-rolled, not vImage -- consistent with `PileSegmenter`'s approach, see note below). `CameraCaptureController.captureBurst()` and `PhoneCameraFrameSource.captureBurst()` both fire 3 stills ~150ms apart from a single session; wired into the pile segmentation debug screen ("Capture Burst (Glasses)" / "Capture Burst (Phone)"), which now shows each frame's score with the picked one highlighted.
+- **Blur reject:** if even the best frame is below a threshold (tune from test photos), don't scan. Coach the user instead: "Hold still and lean in a little." -- **Not yet thresholded.** No real sharp-vs-blurry score data exists yet; the debug screen surfaces raw scores so the threshold can be tuned from real captures (shaky vs. steady) before this gets wired into the actual scan flow.
 - **Glasses coaching** (spoken + on screen): "Lean in so the mat fills your view. Hold still." Run the burst only after a short countdown.
 - **Lighting hint:** if the mean brightness of the mat region is low, say "Try more light — printed pieces need it."
 - Use still capture (`capturePhoto`), **never video frames**, for pile mode.
@@ -84,6 +84,8 @@ Known failure modes:
 - Pieces cut off at the frame edge
 
 Coach the user to avoid these: no touching pieces, avoid glare, keep the mat edges in view. Expect about 15% junk crops; the matcher tolerates them because junk rarely matches a set part.
+
+**Milestone 1 validated** (`PileSegmenter.swift`, ported from the Python prototype, tested via a DEBUG-only "Pile Segmentation Test" screen that overlays numbered boxes and shows each crop). On a real on-device photo with pieces spread apart, 10+ of ~14 detected pieces were clean, correctly-cropped single boxes. The one remaining failure cluster was pieces genuinely touching in the pile (confirmed by inspecting the actual crop contents, not just box outlines) -- exactly the limitation already called out above, not a porting bug. A secondary, benign effect: a long piece lying at a diagonal gets an oversized axis-aligned bounding box (it has to span the full diagonal extent), inflating overlap with neighbors without being a real detection error.
 
 Future (not v1): replace this with a trained one-class "brick" detector (Core ML). See the licensing rules in §8.
 
@@ -177,8 +179,12 @@ Brixi will be commercial (freemium), so:
 1. ~~Phase 0 diagnostics → Jake sends 3–4 photos → re-test in chat.~~ Done -- see §10.
 2. ~~SDK 1.0 upgrade + audio rules (§7).~~ Done -- see §7, §10.
 3. ~~Part ID matching (§6). Unit-test it with `15210pb069`, `30562pb059`, `4460bpb002`, `2429c01`.~~ Done -- `PartIDResolver.swift`, stripping logic verified against all four worked examples; live-confirmed on real scans of both the Road Sign (`15210pb069`) and Cylinder Quarter (`30562pb059`) pieces.
-4. Phone pile mode end to end (§4) with a debug screen that shows the crops. **Next up.**
-5. Glasses pile mode: burst, blur check, coaching.
+4. Phone pile mode end to end (§4) with a debug screen that shows the crops.
+   - ~~Find pieces (§4.2), validated against real on-device captures.~~ Done -- see §4.2's own note. Clean single-box-per-piece results once pieces have real gaps between them; touching pieces still merge into one box, matching the spec's own known limitation (§4.2's "no touching pieces" coaching note), not a bug in the port.
+   - ~~Capture: burst + sharpest-frame pick (§4.1).~~ Done -- see §4.1's own note. Blur-reject threshold still open, pending real tuning data.
+   - Name pieces (§4.3, batched Brickognize) and check against set list (§4.4) -- **next up.**
+   - Output UI (§4.5).
+5. Glasses pile mode: burst, blur check, coaching. (Burst capture itself already shared between phone and glasses as of §4.1 -- this item is now mainly the spoken coaching + countdown + lighting hint.)
 6. Acceptance run (§5) with the same 4-pile layout.
 
 **Not in the original plan, surfaced by live single-piece testing along the way** (both apply to pile mode too, since it reuses this same matching path):

@@ -35,7 +35,7 @@ enum PileSegmenter {
   /// decoded -- an image with zero detected pieces is still a valid
   /// (empty) result.
   static func detectPieces(in imageData: Data) -> Result? {
-    guard let image = orientedCGImage(from: imageData) else { return nil }
+    guard let image = ImageDecoding.orientedCGImage(from: imageData) else { return nil }
     let pieces = detectPieces(in: image)
     return Result(image: image, pieces: pieces)
   }
@@ -98,16 +98,7 @@ enum PileSegmenter {
     return results
   }
 
-  // MARK: - Decode + orientation
-
-  /// Applies the JPEG's EXIF orientation before any pixel access, so
-  /// mask/crop coordinates match what a viewer (and Brickognize) would
-  /// actually see -- matches the Python prototype's
-  /// `ImageOps.exif_transpose`.
-  private static func orientedCGImage(from data: Data) -> CGImage? {
-    guard let ciImage = CIImage(data: data, options: [.applyOrientationProperty: true]) else { return nil }
-    return CIContext().createCGImage(ciImage, from: ciImage.extent)
-  }
+  // MARK: - Decode
 
   private static func rgbaBytes(of image: CGImage) -> [UInt8]? {
     let width = image.width

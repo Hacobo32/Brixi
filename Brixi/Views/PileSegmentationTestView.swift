@@ -24,6 +24,9 @@ struct PileSegmentationTestView: View {
             overlayImage(result)
             Text("\(result.pieces.count) piece\(result.pieces.count == 1 ? "" : "s") detected")
               .font(.headline)
+            if !viewModel.burstScores.isEmpty {
+              burstScoreRow(viewModel.burstScores, picked: viewModel.pickedBurstIndex)
+            }
             if !viewModel.cropThumbnails.isEmpty {
               cropStrip(viewModel.cropThumbnails)
             }
@@ -57,11 +60,19 @@ struct PileSegmentationTestView: View {
           }
 
           MockDeviceKitButton(
-            "Capture from Glasses",
+            "Capture Burst (Glasses)",
             style: .primary,
             disabled: viewModel.isProcessing
           ) {
-            viewModel.captureFromGlasses()
+            viewModel.captureBurstFromGlasses()
+          }
+
+          MockDeviceKitButton(
+            "Capture Burst (Phone)",
+            style: .primary,
+            disabled: viewModel.isProcessing
+          ) {
+            viewModel.captureBurstFromPhone()
           }
 
           if viewModel.isProcessing {
@@ -114,6 +125,26 @@ struct PileSegmentationTestView: View {
     }
     .aspectRatio(imageSize.width / imageSize.height, contentMode: .fit)
     .frame(maxHeight: 400)
+  }
+
+  /// One sharpness score per burst frame, with the picked (sharpest)
+  /// frame highlighted -- the diagnostic needed to eventually tune §4.1's
+  /// "don't scan, coach the user" blur-reject threshold against real
+  /// numbers instead of a guess.
+  private func burstScoreRow(_ scores: [Double], picked: Int?) -> some View {
+    HStack(spacing: 8) {
+      Text("Burst sharpness:")
+        .font(.caption)
+        .foregroundStyle(.secondary)
+      ForEach(Array(scores.enumerated()), id: \.offset) { index, score in
+        Text(String(format: "%.0f", score))
+          .font(.caption.monospacedDigit())
+          .padding(.horizontal, 6)
+          .padding(.vertical, 2)
+          .background(index == picked ? Color.green.opacity(0.3) : Color(.systemGray5))
+          .clipShape(Capsule())
+      }
+    }
   }
 
   /// Shows what's actually inside each detected box, numbered to match

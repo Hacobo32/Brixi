@@ -50,6 +50,31 @@ final class CameraCaptureController {
   }
 
   func captureOnePhoto() async throws -> Data {
+    try await withActiveStream { stream in
+      try await self.capturePhoto(from: stream)
+    }
+  }
+
+  /// Captures `count` stills in quick succession from a single stream
+  /// session (docs/pile-mode-spec.md §4.1: "take 3 frames about 150 ms
+  /// apart"), for BlurDetector.sharpest to pick the least shaky one.
+  /// Reusing one session/stream across all frames is both faster and
+  /// closer to "a moment of holding still" than paying the full
+  /// session-start cost per frame.
+  func captureBurst(count: Int = 3, intervalMs: UInt64 = 150) async throws -> [Data] {
+    try await withActiveStream { stream in
+      var frames: [Data] = []
+      for index in 0..<count {
+        frames.append(try await self.capturePhoto(from: stream))
+        if index < count - 1 {
+          try await Task.sleep(for: .milliseconds(intervalMs))
+        }
+      }
+      return frames
+    }
+  }
+
+  private func withActiveStream<T>(_ body: (MWDATCamera.Stream) async throws -> T) async throws -> T {
     let selector = AutoDeviceSelector(wearables: wearables)
     // AutoDeviceSelector only resolves an active device for a selector that's
     // actually being observed -- a freshly created, never-subscribed instance
@@ -80,7 +105,7 @@ final class CameraCaptureController {
 
     let stream = camera.stream
     try await waitForStreaming(stream)
-    return try await capturePhoto(from: stream)
+    return try await body(stream)
   }
 
   // MARK: - Device

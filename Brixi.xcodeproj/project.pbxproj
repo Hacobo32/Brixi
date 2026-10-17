@@ -45,6 +45,8 @@
 		BF0000000000000000000156 /* PileSegmenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF0000000000000000000157 /* PileSegmenter.swift */; };
 		BF0000000000000000000158 /* PileSegmentationTestViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF0000000000000000000159 /* PileSegmentationTestViewModel.swift */; };
 		BF0000000000000000000160 /* PileSegmentationTestView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF0000000000000000000161 /* PileSegmentationTestView.swift */; };
+		BF0000000000000000000162 /* ImageDecoding.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF0000000000000000000163 /* ImageDecoding.swift */; };
+		BF0000000000000000000164 /* BlurDetector.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF0000000000000000000165 /* BlurDetector.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -87,6 +89,8 @@
 		BF0000000000000000000157 /* PileSegmenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PileSegmenter.swift; sourceTree = "<group>"; };
 		BF0000000000000000000159 /* PileSegmentationTestViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PileSegmentationTestViewModel.swift; sourceTree = "<group>"; };
 		BF0000000000000000000161 /* PileSegmentationTestView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PileSegmentationTestView.swift; sourceTree = "<group>"; };
+		BF0000000000000000000163 /* ImageDecoding.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageDecoding.swift; sourceTree = "<group>"; };
+		BF0000000000000000000165 /* BlurDetector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlurDetector.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -199,6 +203,8 @@
 				BF0000000000000000000153 /* CaptureDiagnostics.swift */,
 				BF0000000000000000000155 /* PartIDResolver.swift */,
 				BF0000000000000000000157 /* PileSegmenter.swift */,
+				BF0000000000000000000163 /* ImageDecoding.swift */,
+				BF0000000000000000000165 /* BlurDetector.swift */,
 			);
 			path = Recognition;
 			sourceTree = "<group>";
@@ -339,6 +345,8 @@
 				BF0000000000000000000156 /* PileSegmenter.swift in Sources */,
 				BF0000000000000000000158 /* PileSegmentationTestViewModel.swift in Sources */,
 				BF0000000000000000000160 /* PileSegmentationTestView.swift in Sources */,
+				BF0000000000000000000162 /* ImageDecoding.swift in Sources */,
+				BF0000000000000000000164 /* BlurDetector.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

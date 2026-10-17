@@ -88,6 +88,23 @@ final class PhoneCameraFrameSource: NSObject, FrameSource, @unchecked Sendable {
     }
   }
 
+  /// Captures `count` stills in quick succession (docs/pile-mode-spec.md
+  /// §4.1: "take 3 frames about 150 ms apart"), so BlurDetector.sharpest
+  /// can pick the least shaky one. Calls are sequential -- there's only
+  /// ever one in-flight capture slot -- which is fine since each await
+  /// already waits for the previous photo to finish processing before
+  /// triggering the next.
+  func captureBurst(count: Int = 3, intervalMs: UInt64 = 150) async throws -> [Data] {
+    var frames: [Data] = []
+    for index in 0..<count {
+      frames.append(try await captureOneFrame())
+      if index < count - 1 {
+        try await Task.sleep(for: .milliseconds(intervalMs))
+      }
+    }
+    return frames
+  }
+
   // MARK: - Permission
 
   private func ensurePermission() async throws {
