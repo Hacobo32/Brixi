@@ -92,6 +92,9 @@ final class PileSegmentationTestViewModel: ObservableObject {
         recognitionResults[index] = recognized
         recognitionProgress = RecognitionProgress(completed: index + 1, total: cropData.count)
       }
+      // Cleared once done -- otherwise "Checking N of N..." sticks around
+      // forever with nothing to signal the batch actually finished.
+      recognitionProgress = nil
       isRecognizing = false
     }
   }
