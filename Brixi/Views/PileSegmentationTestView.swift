@@ -15,6 +15,7 @@ import SwiftUI
 struct PileSegmentationTestView: View {
   @ObservedObject var viewModel: PileSegmentationTestViewModel
   @State private var photosPickerItem: PhotosPickerItem?
+  @State private var showResults = false
 
   var body: some View {
     NavigationView {
@@ -46,6 +47,9 @@ struct PileSegmentationTestView: View {
               }
               if let tally = viewModel.matchTally {
                 matchSummary(tally)
+                MockDeviceKitButton("View Results", style: .primary) {
+                  showResults = true
+                }
               }
             }
           } else if let imageData = viewModel.selectedImageData, let uiImage = UIImage(data: imageData) {
@@ -108,6 +112,17 @@ struct PileSegmentationTestView: View {
       }
       .background(Color(.systemGroupedBackground))
       .navigationTitle("Pile Segmentation Test")
+    }
+    .sheet(isPresented: $showResults) {
+      if let data = viewModel.resultsViewData {
+        PileResultsView(
+          setName: viewModel.activeBuildSetName ?? "Active Build",
+          image: data.image,
+          pieces: data.pieces,
+          classifications: data.classifications,
+          tally: data.tally
+        )
+      }
     }
   }
 
@@ -204,6 +219,11 @@ struct PileSegmentationTestView: View {
             }
           }
           .frame(width: 80)
+          // Without this, the Found/Maybe badge's bottom edge sits flush
+          // against the row's own height, so its descender (the "d" in
+          // "Found") reads as clipped even though nothing is actually
+          // cutting it off.
+          .padding(.bottom, 4)
         }
       }
       .padding(.horizontal, 4)
@@ -223,12 +243,12 @@ struct PileSegmentationTestView: View {
   }
 
   /// Rolled-up §4.4 result for the whole batch against the active build's
-  /// needed-parts list -- the eventual output screen's numbers (§4.5),
-  /// shown here in debug form before there's a dedicated results UI.
+  /// needed-parts list -- a quick inline readout before "View Results"
+  /// opens the full §4.5 screen (PileResultsView) with the same numbers.
   private func matchSummary(_ tally: PileMatcher.Tally) -> some View {
-    let foundTotal = tally.foundCounts.values.reduce(0, +)
+    let foundTotal = tally.found.reduce(0) { $0 + $1.count }
     return VStack(alignment: .leading, spacing: 2) {
-      Text("Matched against active build: \(foundTotal) found, \(tally.maybeParts.count) maybe, \(tally.missing.count) still missing")
+      Text("Matched against active build: \(foundTotal) found, \(tally.maybe.count) maybe, \(tally.missing.count) still missing")
         .font(.caption)
         .foregroundStyle(.secondary)
     }

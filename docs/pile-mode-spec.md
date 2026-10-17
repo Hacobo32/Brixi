@@ -115,6 +115,8 @@ Future (not v1): replace this with a trained one-class "brick" detector (Core ML
 - **Voice:** short. "Found 6 pieces from your set. Top left: 2 by 6 tan plate…" Read the found pieces only. Offer "Say 'next' for more" only if voice input exists (§7).
 - "Where is part X?": tapping a part in the missing/found list highlights its box.
 
+**Done** -- `PileResultsView.swift`: solid green boxes on found pieces, dashed yellow on maybe, nothing on ignored (no box drawn at all, not just unlabeled -- matches "stay silent" from §4.4). Found/Maybe/Still Missing sections below, tapping a Found or Maybe row highlights its box in blue (a missing part has no box to highlight, so those rows aren't tappable). Voice is a short running count ("Found 6 pieces from your set") rather than the worked example's positional detail ("Top left: ...") -- that needs real on-screen layout analysis this doesn't attempt, and "short" was the explicit requirement; per-part detail can be added later without changing the screen's shape. Not yet wired into BuildDetailView as a real entry point (§11, Milestone 6) -- the pile segmentation debug screen presents it today (a "View Results" button, once a batch is matched) against whatever build is active, which is enough to validate the screen on real on-device data before that wiring exists.
+
 ## 5. Acceptance targets (re-use the test harness)
 
 Use the same 4-pile test layout (blue mat, 12–25 pieces each, including gold-printed 2×2 road-sign tiles and small round 1×1 plates):
@@ -187,8 +189,8 @@ Brixi will be commercial (freemium), so:
    - ~~Find pieces (§4.2), validated against real on-device captures.~~ Done -- see §4.2's own note. Clean single-box-per-piece results once pieces have real gaps between them; touching pieces still merge into one box, matching the spec's own known limitation (§4.2's "no touching pieces" coaching note), not a bug in the port.
    - ~~Capture: burst + sharpest-frame pick (§4.1).~~ Done -- see §4.1's own note. Blur-reject threshold still open, pending real tuning data.
    - ~~Name pieces (§4.3, batched Brickognize).~~ Done and validated on-device -- see §4.3's own note.
-   - ~~Check against set list (§4.4).~~ Done -- see §4.4's own note. Needs an on-device run against the active build to confirm real found/maybe counts look right.
-   - Output UI (§4.5) -- **next up.**
+   - ~~Check against set list (§4.4).~~ Done and validated on-device -- see §4.4's own note. 6 found / 0 maybe / 111 still missing on a 14-piece pile against set 76157, with no obvious false "Found" (a 0.91-confidence "Brick 2x2 Corner" correctly got no badge at all, since it isn't in this set's inventory).
+   - ~~Output UI (§4.5).~~ Done -- see §4.5's own note. Needs an on-device run to confirm the box overlay, tap-to-highlight, and spoken summary all work as expected.
 5. Glasses pile mode: burst, blur check, coaching. (Burst capture itself already shared between phone and glasses as of §4.1 -- this item is now mainly the spoken coaching + countdown + lighting hint.)
 6. Acceptance run (§5) with the same 4-pile layout.
 

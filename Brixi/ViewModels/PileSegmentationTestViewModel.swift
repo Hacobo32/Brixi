@@ -72,6 +72,18 @@ final class PileSegmentationTestViewModel: ObservableObject {
     return buildStore.build(setNum: activeSet.setNum)
   }
 
+  var activeBuildSetName: String? { buildStore?.activeSet?.name }
+
+  /// Everything PileResultsView needs, once a batch has been matched
+  /// against the active build -- nil until then (no premature "View
+  /// Results" button with nothing to show).
+  var resultsViewData: (image: CGImage, pieces: [PileSegmenter.DetectedPiece], classifications: [PileMatchClassification], tally: PileMatcher.Tally)? {
+    guard let result, let tally = matchTally else { return nil }
+    let resolvedClassifications = classifications.map { $0 ?? .ignore }
+    guard resolvedClassifications.count == result.pieces.count else { return nil }
+    return (result.image, result.pieces, resolvedClassifications, tally)
+  }
+
   init(catalog: CatalogDatabase?, rebrickableClient: RebrickableClient?, buildStore: BuildProjectStore?) {
     self.catalog = catalog
     self.partIDResolver = PartIDResolver(client: rebrickableClient)

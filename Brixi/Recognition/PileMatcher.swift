@@ -59,12 +59,12 @@ enum PileMatcher {
   }
 
   struct Tally {
-    /// Keyed by NeededPart.id ("\(partNum)-\(colorId)"), counting how many
-    /// crops this batch classified as "found" for that part/color --
-    /// capped at quantityNeeded by the caller before persisting, same as
-    /// single-piece mode's markFound.
-    let foundCounts: [String: Int]
-    let maybeParts: [NeededPart]
+    /// One entry per distinct part/color this batch found, with how many
+    /// crops matched it -- shaped for the results screen's "Found" list
+    /// directly, rather than a count dict callers would have to re-join
+    /// back to a NeededPart themselves.
+    let found: [(part: NeededPart, count: Int)]
+    let maybe: [NeededPart]
     let missing: [NeededPart]
   }
 
@@ -74,27 +74,41 @@ enum PileMatcher {
   /// "track what's still missing").
   static func tally(_ classifications: [PileMatchClassification], against parts: [NeededPart]) -> Tally {
     var foundCounts: [String: Int] = [:]
-    var maybeParts: [NeededPart] = []
-    var foundOrMaybeIds = Set<String>()
+    var foundParts: [String: NeededPart] = [:]
+    var maybe: [NeededPart] = []
 
     for classification in classifications {
       switch classification {
       case .found(let part):
         foundCounts[part.id, default: 0] += 1
-        foundOrMaybeIds.insert(part.id)
+        foundParts[part.id] = part
       case .maybe(let part):
-        maybeParts.append(part)
-        foundOrMaybeIds.insert(part.id)
+        maybe.append(part)
       case .ignore:
         continue
       }
     }
 
+    let found = foundCounts.compactMap { id, count in foundParts[id].map { (part: $0, count: count) } }
     let missing = parts.filter { part in
       let alreadyFound = min(foundCounts[part.id] ?? 0, part.quantityNeeded)
       return alreadyFound + part.quantityFound < part.quantityNeeded
     }
 
-    return Tally(foundCounts: foundCounts, maybeParts: maybeParts, missing: missing)
+    return Tally(found: found, maybe: maybe, missing: missing)
+  }
+}
+
+extension PileMatchClassification {
+  /// The matched NeededPart, regardless of whether it was a confident
+  /// "found" or a weaker "maybe" -- convenient for UI that treats both
+  /// cases similarly (e.g. drawing a box). nil for `.ignore`.
+  var neededPart: NeededPart? {
+    switch self {
+    case .found(let part), .maybe(let part):
+      return part
+    case .ignore:
+      return nil
+    }
   }
 }
