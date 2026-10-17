@@ -20,6 +20,10 @@ final class PileRecognitionBatcher {
   private let clock = ContinuousClock()
   private var lastRequestStart: ContinuousClock.Instant?
   private var cache: [String: BrickognizeSearchResult] = [:]
+  /// Set on every failed attempt (overwritten, not accumulated) so a
+  /// caller can report *something* concrete when every crop in a batch
+  /// comes back nil -- "it failed" alone isn't diagnosable.
+  private(set) var lastErrorDescription: String?
 
   init(client: BrickognizeClient = BrickognizeClient(), requestsPerSecond: Double = 4) {
     self.client = client
@@ -49,6 +53,7 @@ final class PileRecognitionBatcher {
         cache[hash] = result
         return result
       } catch {
+        lastErrorDescription = error.localizedDescription
         if attempt == 0 { continue }
       }
     }

@@ -96,6 +96,14 @@ final class PileSegmentationTestViewModel: ObservableObject {
       // forever with nothing to signal the batch actually finished.
       recognitionProgress = nil
       isRecognizing = false
+      // Every crop failing is almost certainly one systematic cause (bad
+      // network path, a malformed request, a server-side rejection) --
+      // surface whatever the client actually threw instead of leaving a
+      // silent wall of unlabeled thumbnails to puzzle over.
+      if recognitionResults.allSatisfy({ $0 == nil }) {
+        let detail = recognitionBatcher.lastErrorDescription ?? "no response"
+        errorMessage = "All \(cropData.count) crops failed to recognize (\(detail))."
+      }
     }
   }
 
