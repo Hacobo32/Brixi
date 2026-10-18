@@ -44,6 +44,20 @@ enum PileSegmenter {
     image.cropping(to: piece.rect)
   }
 
+  /// The dominant hue (0-255 scale) of the image's central 35-65% region
+  /// -- the same "what color is the mat" estimate used internally by
+  /// detectPieces(in:), exposed so BurstFrameSelector can check whether
+  /// a burst frame is even pointed at the mat before ranking it by
+  /// sharpness. Returns nil only if the image couldn't be decoded.
+  static func centralDominantHue(in imageData: Data) -> Int? {
+    guard let image = ImageDecoding.orientedCGImage(from: imageData) else { return nil }
+    let width = image.width
+    let height = image.height
+    guard width > 0, height > 0, let rgba = rgbaBytes(of: image) else { return nil }
+    let (hue, _) = hsv(fromRGBA: rgba, width: width, height: height)
+    return dominantHue(hue: hue, width: width, height: height)
+  }
+
   // MARK: - Pipeline
 
   private static func detectPieces(in image: CGImage) -> [DetectedPiece] {

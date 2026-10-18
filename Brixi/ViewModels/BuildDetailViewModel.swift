@@ -252,16 +252,16 @@ final class BuildDetailViewModel: ObservableObject {
   }
 
   private func runPileScan(on frames: [Data], source: CaptureSource) async {
-    guard let sharpest = await Task.detached(priority: .userInitiated, operation: {
-      BlurDetector.sharpest(of: frames)
+    guard let picked = await Task.detached(priority: .userInitiated, operation: {
+      BurstFrameSelector.pickBest(from: frames)
     }).value else {
       errorMessage = "Couldn't process that capture."
       return
     }
-    lastCaptureDiagnostics = await CaptureDiagnostics.record(sharpest.data, source: source)
+    lastCaptureDiagnostics = await CaptureDiagnostics.record(picked, source: source)
 
     guard let detected = await Task.detached(priority: .userInitiated, operation: {
-      PileSegmenter.detectPieces(in: sharpest.data)
+      PileSegmenter.detectPieces(in: picked)
     }).value else {
       errorMessage = "Couldn't process that image."
       return

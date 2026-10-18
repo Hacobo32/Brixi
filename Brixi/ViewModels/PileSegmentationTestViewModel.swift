@@ -225,19 +225,26 @@ final class PileSegmentationTestViewModel: ObservableObject {
   }
 
   private func finishBurst(_ frames: [Data]) async {
+    // Scores are shown for every frame regardless of which one gets
+    // picked -- BurstFrameSelector may prefer a lower-scoring frame
+    // over the single sharpest one if that sharpest frame isn't even
+    // pointed at the mat (see its own doc comment), so the highlighted
+    // index below can land on a frame that isn't the top score here.
     let scores = await Task.detached(priority: .userInitiated) {
       frames.map { BlurDetector.sharpnessScore(of: $0) ?? 0 }
     }.value
     burstScores = scores
-    guard let bestIndex = scores.indices.max(by: { scores[$0] < scores[$1] }) else {
+
+    guard let picked = await Task.detached(priority: .userInitiated) {
+      BurstFrameSelector.pickBest(from: frames)
+    }.value else {
       errorMessage = "Couldn't process burst frames."
       isProcessing = false
       return
     }
-    pickedBurstIndex = bestIndex
-    let data = frames[bestIndex]
-    selectedImageData = data
-    await finishDetection(on: data)
+    pickedBurstIndex = frames.firstIndex(of: picked)
+    selectedImageData = picked
+    await finishDetection(on: picked)
   }
 
   /// Segmentation is CPU-bound and synchronous; runs off the main actor

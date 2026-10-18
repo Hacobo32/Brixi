@@ -51,6 +51,7 @@
 		BF0000000000000000000168 /* NeededPartMatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF0000000000000000000169 /* NeededPartMatcher.swift */; };
 		BF0000000000000000000170 /* PileMatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF0000000000000000000171 /* PileMatcher.swift */; };
 		BF0000000000000000000172 /* PileResultsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF0000000000000000000173 /* PileResultsView.swift */; };
+		BF0000000000000000000174 /* BurstFrameSelector.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF0000000000000000000175 /* BurstFrameSelector.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -99,6 +100,7 @@
 		BF0000000000000000000169 /* NeededPartMatcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NeededPartMatcher.swift; sourceTree = "<group>"; };
 		BF0000000000000000000171 /* PileMatcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PileMatcher.swift; sourceTree = "<group>"; };
 		BF0000000000000000000173 /* PileResultsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PileResultsView.swift; sourceTree = "<group>"; };
+		BF0000000000000000000175 /* BurstFrameSelector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BurstFrameSelector.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -217,6 +219,7 @@
 				BF0000000000000000000167 /* PileRecognitionBatcher.swift */,
 				BF0000000000000000000169 /* NeededPartMatcher.swift */,
 				BF0000000000000000000171 /* PileMatcher.swift */,
+				BF0000000000000000000175 /* BurstFrameSelector.swift */,
 			);
 			path = Recognition;
 			sourceTree = "<group>";
@@ -363,6 +366,7 @@
 				BF0000000000000000000168 /* NeededPartMatcher.swift in Sources */,
 				BF0000000000000000000170 /* PileMatcher.swift in Sources */,
 				BF0000000000000000000172 /* PileResultsView.swift in Sources */,
+				BF0000000000000000000174 /* BurstFrameSelector.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
