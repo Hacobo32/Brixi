@@ -61,25 +61,26 @@ enum PileSegmenter {
       notMat[i] = (dist > 22 || sat[i] < 40) ? 1 : 0
     }
 
-    // Open at 3 iterations, not 4 (close stays at 4) -- empirically
-    // tuned against a real miss: a Plant, Leaves 6x5 piece (thin,
-    // branching silhouette) has a "not mat" mask that's already
-    // fragmented by antialiasing at its branch edges before any
-    // morphology runs, and 4 erosion iterations (sized to separate
-    // touching solid pieces) erased it entirely since it never had
-    // much mass to spare. Verified against the same real pile photo
-    // that it doesn't change any of the other already-correct
-    // detections -- this isn't a general "less aggressive" change,
-    // it's the smallest reduction that rescues a real thin piece.
-    var mask = binaryOpen(notMat, width: width, height: height, iterations: 3)
+    var mask = binaryOpen(notMat, width: width, height: height, iterations: 4)
     mask = binaryClose(mask, width: width, height: height, iterations: 4)
     mask = fillHoles(mask, width: width, height: height)
 
     let components = connectedComponents(mask, width: width, height: height)
 
-    // Scales with image size; 1500px^2 is the base case for a
-    // 1440x1080 frame, matching the Python prototype.
-    let minArea = max(1500, Int(1500.0 * Double(width * height) / (1440.0 * 1080.0)))
+    // Scales with image size; 800px^2 is the base case for a 1440x1080
+    // frame -- lowered from the Python prototype's 1500 after a real
+    // miss: a Plant, Leaves 6x5 piece (thin, branching silhouette) has
+    // a "not mat" mask that's already fragmented by antialiasing at its
+    // branch edges before any morphology even runs, leaving its biggest
+    // surviving fragment at 1051-1261px across two different real
+    // captures -- comfortably above 800 (1.3-1.6x margin) but not 1500.
+    // An iteration-count fix was tried first and technically worked on
+    // one photo, but only by a ~5% area margin -- too fragile to survive
+    // a slightly different real capture, confirmed when it failed on a
+    // second one. Lowering the area floor instead gives real margin on
+    // both, admits no new junk in either, and leaves the already-
+    // validated open/close iteration counts untouched.
+    let minArea = max(800, Int(800.0 * Double(width * height) / (1440.0 * 1080.0)))
 
     var results: [DetectedPiece] = []
     for component in components {
