@@ -213,7 +213,25 @@ final class CameraCaptureController {
     }
   }
 
+  /// Bounded so a capture that never gets a publisher callback (no photo,
+  /// no error -- the BLE stream just never delivers one) fails with a
+  /// real error instead of hanging forever, same gap fixed in
+  /// PhoneCameraFrameSource.captureOneFrame() for the phone path.
   private func capturePhoto(from stream: MWDATCamera.Stream) async throws -> Data {
+    try await withThrowingTaskGroup(of: Data.self) { group in
+      group.addTask {
+        try await self.awaitPhoto(from: stream)
+      }
+      group.addTask {
+        try await Task.sleep(for: .seconds(8))
+        throw CameraCaptureError.captureFailed
+      }
+      defer { group.cancelAll() }
+      return try await group.next()!
+    }
+  }
+
+  private func awaitPhoto(from stream: MWDATCamera.Stream) async throws -> Data {
     let bag = ListenerTokenBag()
     let didResume = OSAllocatedUnfairLock(initialState: false)
     return try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Data, Error>) in

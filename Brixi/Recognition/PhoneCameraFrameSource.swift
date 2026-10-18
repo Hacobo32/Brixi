@@ -79,12 +79,28 @@ final class PhoneCameraFrameSource: NSObject, FrameSource, @unchecked Sendable {
     }
   }
 
+  /// Bounded so a capture that never gets a delegate callback (no photo,
+  /// no error -- seen live: the UI hung indefinitely with no feedback)
+  /// fails with a real error instead of hanging forever. The abandoned
+  /// continuation, if the delegate does eventually fire for it, resumes
+  /// harmlessly into nothing -- safe, not a second resume of anything
+  /// still being awaited.
   func captureOneFrame() async throws -> Data {
-    try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Data, Error>) in
-      state.withLock { $0.pendingCapture = continuation }
-      sessionQueue.async { [photoOutput, self] in
-        photoOutput.capturePhoto(with: AVCapturePhotoSettings(), delegate: self)
+    try await withThrowingTaskGroup(of: Data.self) { group in
+      group.addTask {
+        try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Data, Error>) in
+          self.state.withLock { $0.pendingCapture = continuation }
+          self.sessionQueue.async { [photoOutput = self.photoOutput] in
+            photoOutput.capturePhoto(with: AVCapturePhotoSettings(), delegate: self)
+          }
+        }
       }
+      group.addTask {
+        try await Task.sleep(for: .seconds(8))
+        throw PhoneCameraError.captureFailed("Timed out waiting for the camera.")
+      }
+      defer { group.cancelAll() }
+      return try await group.next()!
     }
   }
 
