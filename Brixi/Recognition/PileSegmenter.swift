@@ -61,7 +61,17 @@ enum PileSegmenter {
       notMat[i] = (dist > 22 || sat[i] < 40) ? 1 : 0
     }
 
-    var mask = binaryOpen(notMat, width: width, height: height, iterations: 4)
+    // Open at 3 iterations, not 4 (close stays at 4) -- empirically
+    // tuned against a real miss: a Plant, Leaves 6x5 piece (thin,
+    // branching silhouette) has a "not mat" mask that's already
+    // fragmented by antialiasing at its branch edges before any
+    // morphology runs, and 4 erosion iterations (sized to separate
+    // touching solid pieces) erased it entirely since it never had
+    // much mass to spare. Verified against the same real pile photo
+    // that it doesn't change any of the other already-correct
+    // detections -- this isn't a general "less aggressive" change,
+    // it's the smallest reduction that rescues a real thin piece.
+    var mask = binaryOpen(notMat, width: width, height: height, iterations: 3)
     mask = binaryClose(mask, width: width, height: height, iterations: 4)
     mask = fillHoles(mask, width: width, height: height)
 

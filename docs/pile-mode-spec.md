@@ -69,7 +69,7 @@ v1 assumes pieces are spread on a **plain, single-colour mat that contrasts with
 Algorithm (this worked on 9 phone + 18 glasses photos):
 1. Convert to HSV. Estimate the mat's colour as the dominant hue in the central region.
 2. Mask "not mat": hue distance > ~22 (on a 0–255 scale) **or** low saturation.
-3. Morphological open, then close (about 4 iterations each), then fill holes.
+3. Morphological open (3 iterations), then close (4 iterations), then fill holes. -- Tuned down from "4 iterations each" after a real miss: see the note below.
 4. Connected components. Keep a component if:
    - area ≥ ~1500 px (scale this with image size),
    - it does **not** touch the image border,
@@ -86,6 +86,8 @@ Known failure modes:
 Coach the user to avoid these: no touching pieces, avoid glare, keep the mat edges in view. Expect about 15% junk crops; the matcher tolerates them because junk rarely matches a set part.
 
 **Milestone 1 validated** (`PileSegmenter.swift`, ported from the Python prototype, tested via a DEBUG-only "Pile Segmentation Test" screen that overlays numbered boxes and shows each crop). On a real on-device photo with pieces spread apart, 10+ of ~14 detected pieces were clean, correctly-cropped single boxes. The one remaining failure cluster was pieces genuinely touching in the pile (confirmed by inspecting the actual crop contents, not just box outlines) -- exactly the limitation already called out above, not a porting bug. A secondary, benign effect: a long piece lying at a diagonal gets an oversized axis-aligned bounding box (it has to span the full diagonal extent), inflating overlap with neighbors without being a real detection error.
+
+**Real miss found during Milestone 6 testing: thin/branching pieces vanish entirely.** A Plant, Leaves 6x5 (dark green, in a real pile, with clear gaps around it -- not a touching-pieces case) never got a box at all. Confirmed via single-piece mode that Brickognize recognizes it instantly and confidently in isolation (auto-found), so the miss was in segmentation, not recognition. Reproduced the exact pipeline in Python against the real capture: the piece's thin, radiating-branch silhouette produces a "not mat" mask that's already fragmented by antialiasing at its branch edges before any morphology even runs (biggest raw fragment ~2900px with fill ratio 0.25, surrounded by dozens of 1-50px specks) -- 4 erosion iterations in the open step (sized to separate touching solid pieces, not to survive a piece whose own shape is inherently thin) then erodes what little mass it has down to ~250-650px, well under the 1500px minimum. **Fixed:** open step reduced to 3 iterations (close stays at 4). Verified against the same real photo that this doesn't change any of the 5 other already-correct detections in it -- not a general "less aggressive" tuning, the smallest reduction that rescues this specific failure mode. Not deeply tested against the touching-pieces case from a regression angle, but that failure is already understood to not be fixable by iteration count at all (two solid pieces in true contact have no thin bridge for erosion to exploit, regardless of how many iterations), so this change isn't expected to make it worse.
 
 Future (not v1): replace this with a trained one-class "brick" detector (Core ML). See the licensing rules in §8.
 
