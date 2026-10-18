@@ -235,9 +235,10 @@ final class PileSegmentationTestViewModel: ObservableObject {
     }.value
     burstScores = scores
 
-    guard let picked = await Task.detached(priority: .userInitiated) {
+    let picked = await Task.detached(priority: .userInitiated) {
       BurstFrameSelector.pickBest(from: frames)
-    }.value else {
+    }.value
+    guard let picked else {
       errorMessage = "Couldn't process burst frames."
       isProcessing = false
       return
