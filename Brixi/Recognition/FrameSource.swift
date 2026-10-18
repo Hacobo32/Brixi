@@ -34,4 +34,10 @@ final class GlassesFrameSource: FrameSource {
   func captureOneFrame() async throws -> Data {
     try await cameraController.captureOnePhoto()
   }
+
+  /// Bursts (docs/pile-mode-spec.md §4.1) from the same underlying
+  /// session/stream captureOneFrame() uses -- pile mode's glasses path.
+  func captureBurst(count: Int = 3, intervalMs: UInt64 = 150) async throws -> [Data] {
+    try await cameraController.captureBurst(count: count, intervalMs: intervalMs)
+  }
 }

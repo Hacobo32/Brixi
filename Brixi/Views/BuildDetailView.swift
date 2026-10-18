@@ -57,6 +57,15 @@ struct BuildDetailView: View {
             onCancel: { showPhoneCamera = false }
           )
         }
+        .sheet(item: $viewModel.pileScanResult) { result in
+          PileResultsView(
+            setName: viewModel.setName,
+            image: result.image,
+            pieces: result.pieces,
+            classifications: result.classifications,
+            tally: result.tally
+          )
+        }
     }
     // Attached to the NavigationStack itself, not to `content` -- `content`
     // can resolve to an empty view before the first load finishes, and
@@ -99,7 +108,7 @@ struct BuildDetailView: View {
             } label: {
               Label("Scan with Phone Camera", systemImage: "camera")
             }
-            .disabled(viewModel.isScanning)
+            .disabled(viewModel.isScanning || viewModel.isPileScanning)
 
             Button {
               viewModel.scanWithGlasses()
@@ -113,7 +122,44 @@ struct BuildDetailView: View {
                 Label("Scan with Glasses", systemImage: "eyeglasses")
               }
             }
-            .disabled(viewModel.isScanning)
+            .disabled(viewModel.isScanning || viewModel.isPileScanning)
+
+            // Pile mode (docs/pile-mode-spec.md §4): a whole spread-out
+            // pile in one photo, instead of one piece at a time.
+            Button {
+              viewModel.scanPileWithPhone()
+            } label: {
+              Label("Scan a Pile (Phone)", systemImage: "square.grid.3x3")
+            }
+            .disabled(viewModel.isScanning || viewModel.isPileScanning)
+
+            Button {
+              viewModel.scanPileWithGlasses()
+            } label: {
+              Label("Scan a Pile (Glasses)", systemImage: "square.grid.3x3.fill")
+            }
+            .disabled(viewModel.isScanning || viewModel.isPileScanning)
+
+            // §4.2's own known limitation: touching pieces merge into a
+            // single detection, not a bug -- just how v1's plain
+            // color-separation segmentation works (no object-boundary
+            // model). Coaching this up front beats a confusing result.
+            Text("Spread pieces out on a plain mat with gaps between them.")
+              .font(.caption2)
+              .foregroundStyle(.secondary)
+
+            if viewModel.isPileScanning {
+              HStack {
+                ProgressView()
+                if let progress = viewModel.pileScanProgress {
+                  Text("Checking \(progress.completed) of \(progress.total)…")
+                } else {
+                  Text("Scanning pile…")
+                }
+              }
+              .font(.caption)
+              .foregroundStyle(.secondary)
+            }
 
             if let errorMessage = viewModel.errorMessage {
               Text(errorMessage)

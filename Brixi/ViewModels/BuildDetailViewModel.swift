@@ -8,6 +8,7 @@
 //
 
 import Foundation
+import UIKit
 
 @MainActor
 final class BuildDetailViewModel: ObservableObject {
@@ -61,6 +62,19 @@ final class BuildDetailViewModel: ObservableObject {
   /// Set after every capture when the "Save Captures" debug toggle
   /// (Settings) is on -- see CaptureDiagnostics. nil the rest of the time.
   @Published private(set) var lastCaptureDiagnostics: CaptureDiagnosticsInfo?
+  /// True while a pile scan (capture -> segment -> recognize -> match) is
+  /// running -- a separate flag from isScanning since the two scans are
+  /// independent actions a user could in principle trigger back to back,
+  /// and pile mode's "Checking N of M" progress has nowhere to live on
+  /// the single-piece scanResult banner.
+  @Published var isPileScanning = false
+  @Published var pileScanProgress: (completed: Int, total: Int)?
+  /// Set once a pile scan finishes with at least one detected piece --
+  /// BuildDetailView presents PileResultsView from this via .sheet(item:).
+  /// Already-found quantities are persisted (see applyPileTally) before
+  /// this is set, not when the results sheet is dismissed, so progress
+  /// isn't lost if the user swipes the sheet away without reading it.
+  @Published var pileScanResult: PileScanPresentation?
 
   let setName: String
 
@@ -77,6 +91,7 @@ final class BuildDetailViewModel: ObservableObject {
   private let glassesFrameSource = GlassesFrameSource()
   private let recognitionService: RecognitionService?
   private let partIDResolver: PartIDResolver
+  private let pileRecognitionBatcher = PileRecognitionBatcher()
 
   init(
     setNum: String,
@@ -181,6 +196,122 @@ final class BuildDetailViewModel: ObservableObject {
 
   func dismissScanResult() {
     scanResult = nil
+  }
+
+  // MARK: - Pile mode (docs/pile-mode-spec.md §4)
+
+  struct PileScanPresentation: Identifiable {
+    let id = UUID()
+    let image: CGImage
+    let pieces: [PileSegmenter.DetectedPiece]
+    let classifications: [PileMatchClassification]
+    let tally: PileMatcher.Tally
+  }
+
+  /// Bursts from the glasses, picks the sharpest frame, and runs the full
+  /// pile pipeline (§4.1-§4.4) against it.
+  func scanPileWithGlasses() {
+    beginPileScan()
+    Task {
+      do {
+        let frames = try await glassesFrameSource.captureBurst()
+        await runPileScan(on: frames, source: .glasses)
+      } catch {
+        errorMessage = error.localizedDescription
+      }
+      isPileScanning = false
+    }
+  }
+
+  /// Same pipeline, from the phone's own camera -- no live preview (same
+  /// blind-capture pattern as the pile segmentation debug screen this was
+  /// validated against), since pile mode coaches "lean in and hold still"
+  /// rather than needing a live framing view (§4.1).
+  func scanPileWithPhone() {
+    beginPileScan()
+    Task {
+      do {
+        try await phoneCameraSource.start()
+        defer { phoneCameraSource.stop() }
+        // Lets auto-exposure/focus settle before the burst fires.
+        try await Task.sleep(for: .milliseconds(400))
+        let frames = try await phoneCameraSource.captureBurst()
+        await runPileScan(on: frames, source: .phone)
+      } catch {
+        errorMessage = error.localizedDescription
+      }
+      isPileScanning = false
+    }
+  }
+
+  private func beginPileScan() {
+    isPileScanning = true
+    errorMessage = nil
+    pileScanProgress = nil
+    pileScanResult = nil
+  }
+
+  private func runPileScan(on frames: [Data], source: CaptureSource) async {
+    guard let sharpest = await Task.detached(priority: .userInitiated, operation: {
+      BlurDetector.sharpest(of: frames)
+    }).value else {
+      errorMessage = "Couldn't process that capture."
+      return
+    }
+    lastCaptureDiagnostics = await CaptureDiagnostics.record(sharpest.data, source: source)
+
+    guard let detected = await Task.detached(priority: .userInitiated, operation: {
+      PileSegmenter.detectPieces(in: sharpest.data)
+    }).value else {
+      errorMessage = "Couldn't process that image."
+      return
+    }
+    guard !detected.pieces.isEmpty else {
+      errorMessage = "Couldn't find any pieces in that photo. Spread them out with gaps and try again."
+      return
+    }
+
+    let crops = await Task.detached(priority: .userInitiated, operation: {
+      detected.pieces.compactMap { piece in PileSegmenter.crop(piece, from: detected.image) }
+    }).value
+    let cropData = crops.compactMap { UIImage(cgImage: $0).jpegData(compressionQuality: 0.9) }
+
+    guard let catalog, let build else {
+      errorMessage = "Recognition isn't available -- the local catalog failed to load."
+      return
+    }
+
+    var classifications: [PileMatchClassification] = []
+    classifications.reserveCapacity(cropData.count)
+    pileScanProgress = (0, cropData.count)
+    for (index, crop) in cropData.enumerated() {
+      if let recognized = await pileRecognitionBatcher.recognize(crop: crop) {
+        classifications.append(await PileMatcher.classify(recognized, against: build.parts, catalog: catalog, resolver: partIDResolver))
+      } else {
+        classifications.append(.ignore)
+      }
+      pileScanProgress = (index + 1, cropData.count)
+    }
+    pileScanProgress = nil
+
+    let tally = PileMatcher.tally(classifications, against: build.parts)
+    applyPileTally(tally)
+    pileScanResult = PileScanPresentation(image: detected.image, pieces: detected.pieces, classifications: classifications, tally: tally)
+  }
+
+  /// Persists this scan's "found" counts immediately, capped at each
+  /// part's remaining quantityNeeded -- same floor single-piece mode's
+  /// markFound already enforces (BuildProjectStore.markFound clamps),
+  /// kept explicit here too since a pile scan can report a count greater
+  /// than what's still needed (e.g. a user already found some via
+  /// single-piece mode before switching to a pile scan).
+  private func applyPileTally(_ tally: PileMatcher.Tally) {
+    for (part, count) in tally.found {
+      let remaining = max(0, part.quantityNeeded - part.quantityFound)
+      let delta = min(count, remaining)
+      guard delta > 0 else { continue }
+      markFound(part, delta: delta)
+    }
   }
 
   private func evaluate(_ outcome: RecognitionOutcome) async -> ScanResult {
