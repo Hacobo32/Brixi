@@ -106,7 +106,7 @@ struct BuildDetailView: View {
             Button {
               showPhoneCamera = true
             } label: {
-              Label("Scan with Phone Camera", systemImage: "camera")
+              Label("Scan a Piece (Phone)", systemImage: "camera")
             }
             .disabled(viewModel.isScanning || viewModel.isPileScanning)
 
@@ -119,7 +119,7 @@ struct BuildDetailView: View {
                   Text("Scanning…")
                 }
               } else {
-                Label("Scan with Glasses", systemImage: "eyeglasses")
+                Label("Scan a Piece (Glasses)", systemImage: "eyeglasses")
               }
             }
             .disabled(viewModel.isScanning || viewModel.isPileScanning)
