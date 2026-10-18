@@ -38,43 +38,44 @@ struct PileResultsView: View {
 
   var body: some View {
     NavigationView {
-      ScrollView {
-        VStack(alignment: .leading, spacing: 16) {
+      // One List is the whole screen's scroll container -- a List nested
+      // inside its own ScrollView has no natural content height, so
+      // anything past the first screenful became unreachable once the
+      // outer ScrollView ran out of room. The image goes in as an
+      // unlabeled first section instead of sitting above a second,
+      // separately-scrolling container.
+      List {
+        Section {
           overlayImage
           Text("Scanned against: \(setName)")
             .font(.caption)
             .foregroundStyle(.secondary)
             .padding(.horizontal)
-          List {
-            if !tally.found.isEmpty {
-              Section("Found (\(foundTotal))") {
-                ForEach(tally.found, id: \.part.id) { entry in
-                  partRow(entry.part, quantity: entry.count, tappable: true)
-                }
-              }
-            }
-            if !tally.maybe.isEmpty {
-              Section("Maybe (\(tally.maybe.count))") {
-                ForEach(tally.maybe) { part in
-                  partRow(part, quantity: 1, tappable: true)
-                }
-              }
-            }
-            if !tally.missing.isEmpty {
-              Section("Still Missing (\(tally.missing.count))") {
-                ForEach(tally.missing) { part in
-                  partRow(part, quantity: part.quantityNeeded - part.quantityFound, tappable: false)
-                }
-              }
+            .padding(.bottom, 4)
+        }
+        .listRowInsets(EdgeInsets())
+
+        if !tally.found.isEmpty {
+          Section("Found (\(foundTotal))") {
+            ForEach(tally.found, id: \.part.id) { entry in
+              partRow(entry.part, quantity: entry.count, tappable: true)
             }
           }
-          // A List already scrolls internally; inside this screen's own
-          // ScrollView it just needs enough height to show a few rows
-          // without the page becoming one scroll-within-a-scroll.
-          .frame(minHeight: 420)
-          .scrollDisabled(true)
         }
-        .padding(.top)
+        if !tally.maybe.isEmpty {
+          Section("Maybe (\(tally.maybe.count))") {
+            ForEach(tally.maybe) { part in
+              partRow(part, quantity: 1, tappable: true)
+            }
+          }
+        }
+        if !tally.missing.isEmpty {
+          Section("Still Missing (\(tally.missing.count))") {
+            ForEach(tally.missing) { part in
+              partRow(part, quantity: part.quantityNeeded - part.quantityFound, tappable: false)
+            }
+          }
+        }
       }
       .navigationTitle("Pile Scan Results")
       .navigationBarTitleDisplayMode(.inline)
