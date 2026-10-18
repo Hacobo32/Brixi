@@ -179,6 +179,9 @@ Brixi will be commercial (freemium), so:
   3. Commercial use in a paid/freemium App Store app?
   4. Volume pricing and rate limits for pile mode (many calls per scan)?
   5. Image storage/retention, for our privacy notice.
+- **UI polish, deferred (explicitly "not for now"):**
+  - Better icons for the four scan buttons (Scan a Piece/Pile × Phone/Glasses) -- currently generic SF Symbols (`camera`, `eyeglasses`, `square.grid.3x3`, `square.grid.3x3.fill`), not purpose-made.
+  - Nicer spoken voice for pile results -- currently `AVSpeechSynthesizer`'s plain system default; Jake confirmed it works but isn't a fan of the voice itself.
 
 ## 11. Suggested build order
 
