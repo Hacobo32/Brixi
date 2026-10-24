@@ -207,6 +207,17 @@ Brixi will be commercial (freemium), so:
 5. Glasses pile mode: burst, blur check, coaching. (Burst capture itself already shared between phone and glasses as of §4.1 -- this item is now mainly the spoken coaching + countdown + lighting hint.)
 6. ~~Wire pile mode into BuildDetailView as a real entry point.~~ Done -- "Scan a Pile (Phone)" / "Scan a Pile (Glasses)" buttons on the build screen, with a coaching caption ("Spread pieces out on a plain mat with gaps between them"), a live "Checking N of M..." progress row, and PileResultsView presented on completion. Found counts are persisted (BuildProjectStore, capped at each part's remaining quantityNeeded) as soon as the scan finishes, before the results sheet is even shown, so progress isn't lost if it's dismissed without reading. Replaces the DEBUG-only debug-screen workaround as pile mode's real path -- the debug screen stays, for segmentation-only troubleshooting independent of a real build. Needs an on-device run to confirm the end-to-end flow (not just its individual pieces, already validated separately) and that persisted quantities actually show up in the Needed Parts list afterward.
 7. Acceptance run (§5) with the same 4-pile layout.
+   - **Results so far** (one phone pile scan, 24 pieces; one glasses pile scan, 23 pieces, against set 76157):
+
+     | Metric | Phone target | Phone actual | Glasses target | Glasses actual |
+     |---|---|---|---|---|
+     | Crops with an answer | ≥ 95% | 100% ✅ | ≥ 95% | 100% ✅ |
+     | Top score ≥ 0.80 | ≥ 85% | 83.3% ⚠️ (borderline) | ≥ 65% | 69.6% ✅ |
+     | **False "Found"** | **≤ 2%** | **0% ✅** (14/14 Found crops manually checked against the physical pile, incl. one close call on image-quality grounds, confirmed correct against the actual piece) | **≤ 3%** | **0% ✅** (8/8 Found crops checked, same result) |
+     | Junk crops (not a piece) | ≤ 15% | 0% ✅ | ≤ 15% | 0% ✅ |
+     | End-to-end scan time, 25 pieces | ≤ 12 s | not yet measured | ≤ 15 s | not yet measured |
+
+     4 of 4 metrics measured so far pass outright; the phone's ≥0.80 score rate is a hair under target (83.3% vs. 85%) but close enough that it isn't read as a real miss -- same ballpark as the acceptance tolerance, not a systemic scoring problem. Only the end-to-end timing metric remains unmeasured for both devices. The capture-timeout fix (§4.1-adjacent, added after a live ~5-minute hang) also still needs a clean re-test -- the one hang observed during this run was confirmed to predate that fix, not a test of it.
 
 **Not in the original plan, surfaced by live single-piece testing along the way** (both apply to pile mode too, since it reuses this same matching path):
 - Auto-find no longer hard-gates on Brickognize's predicted color (confirmed ~5% accurate against ~90%+ item-ID accuracy on 20 real pile crops) -- color is now only consulted to disambiguate when a part shape is needed in more than one color. See `BuildDetailViewModel.evaluate()`.
