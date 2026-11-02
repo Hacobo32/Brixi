@@ -10,7 +10,9 @@
 // link that exact print variant back to its base part. Reproduced live,
 // twice, before this existed.
 //
-// Fallback order, cheapest/most-certain first:
+// Fallback order, cheapest/most-certain first -- and tried in that order,
+// not computed all at once, so the live lookup (step 3) only ever runs
+// when steps 1-2 come up empty:
 // 1. The raw ID as Brickognize returned it -- the common case, and the
 //    one CatalogDatabase.partFamily already resolves correctly via
 //    part_relationships when the two sources happen to agree.
@@ -37,10 +39,18 @@ actor PartIDResolver {
     self.client = client
   }
 
-  /// Every Rebrickable part_num worth trying for a Brickognize item,
-  /// broadest/cheapest first and de-duplicated. Callers try each against
-  /// the catalog in order and stop at the first real match.
-  func candidates(for item: BrickognizeItem) async -> [String] {
+  /// The raw ID and shape-stripped base ID -- no network, instant. Callers
+  /// try each against the catalog in order and stop at the first real
+  /// match, falling back to `liveLookup(for:)` only if neither hits --
+  /// covers the common case (§6: "the one CatalogDatabase.partFamily
+  /// already resolves correctly... when the two sources happen to agree")
+  /// without ever touching the network for it. Previously this and the
+  /// live lookup were combined into one array, built eagerly -- meaning
+  /// every crop paid for a live Rebrickable round trip even when the raw
+  /// ID already matched, which was the real cost behind pile mode's
+  /// end-to-end scan time coming in well over the §5 target (a 68s scan
+  /// against a ~19s budget for capture + recognition alone).
+  nonisolated func localCandidates(for item: BrickognizeItem) -> [String] {
     var seen = Set<String>()
     var results: [String] = []
     func add(_ id: String?) {
@@ -50,9 +60,15 @@ actor PartIDResolver {
 
     add(item.id)
     add(Self.baseID(item.id))
-    add(await lookup(bricklinkID: item.id))
 
     return results
+  }
+
+  /// A live Rebrickable lookup by BrickLink ID, cached locally so the same
+  /// ID is never looked up twice in a session -- only worth calling once
+  /// `localCandidates(for:)` has already failed to match anything.
+  func liveLookup(for item: BrickognizeItem) async -> String? {
+    await lookup(bricklinkID: item.id)
   }
 
   private func lookup(bricklinkID: String) async -> String? {
