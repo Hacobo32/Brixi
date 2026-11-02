@@ -63,7 +63,8 @@ struct BuildDetailView: View {
             image: result.image,
             pieces: result.pieces,
             classifications: result.classifications,
-            tally: result.tally
+            tally: result.tally,
+            timingSummary: viewModel.timingSummaryForDisplay
           )
         }
     }

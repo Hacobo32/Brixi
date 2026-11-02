@@ -75,6 +75,24 @@ final class BuildDetailViewModel: ObservableObject {
   /// this is set, not when the results sheet is dismissed, so progress
   /// isn't lost if the user swipes the sheet away without reading it.
   @Published var pileScanResult: PileScanPresentation?
+  /// Last pile scan's phase timing, for on-screen display during the §5
+  /// timing investigation -- surfaced directly on PileResultsView instead
+  /// of Xcode's console, which proved hard to read mid-test over remote
+  /// screenshots. Not persisted, not shown outside DEBUG builds.
+  #if DEBUG
+  @Published private(set) var lastPileScanTimingSummary: String?
+  #endif
+
+  /// `lastPileScanTimingSummary` outside `#if DEBUG`, so call sites (e.g.
+  /// BuildDetailView, which isn't itself DEBUG-gated) don't need their own
+  /// `#if DEBUG` just to read it -- always nil in a release build.
+  var timingSummaryForDisplay: String? {
+    #if DEBUG
+    lastPileScanTimingSummary
+    #else
+    nil
+    #endif
+  }
 
   let setName: String
 
@@ -217,8 +235,7 @@ final class BuildDetailViewModel: ObservableObject {
         let clock = ContinuousClock()
         let burstStart = clock.now
         let frames = try await glassesFrameSource.captureBurst()
-        Self.logPileTiming("burst capture (glasses): \(Self.seconds(clock.now - burstStart))s")
-        await runPileScan(on: frames, source: .glasses)
+        await runPileScan(on: frames, source: .glasses, burstSeconds: Self.seconds(clock.now - burstStart))
       } catch {
         errorMessage = error.localizedDescription
       }
@@ -241,8 +258,7 @@ final class BuildDetailViewModel: ObservableObject {
         let clock = ContinuousClock()
         let burstStart = clock.now
         let frames = try await phoneCameraSource.captureBurst()
-        Self.logPileTiming("burst capture (phone): \(Self.seconds(clock.now - burstStart))s")
-        await runPileScan(on: frames, source: .phone)
+        await runPileScan(on: frames, source: .phone, burstSeconds: Self.seconds(clock.now - burstStart))
       } catch {
         errorMessage = error.localizedDescription
       }
@@ -257,7 +273,7 @@ final class BuildDetailViewModel: ObservableObject {
     pileScanResult = nil
   }
 
-  private func runPileScan(on frames: [Data], source: CaptureSource) async {
+  private func runPileScan(on frames: [Data], source: CaptureSource, burstSeconds: Double) async {
     let clock = ContinuousClock()
     let prepareStart = clock.now
 
@@ -292,9 +308,11 @@ final class BuildDetailViewModel: ObservableObject {
     }
 
     // Timed separately (not just total) so a slow scan's cause -- Brickognize
-    // itself vs. the §4.4 classify/part-ID-resolution step -- shows up
-    // directly in the console instead of needing another round of guessing
-    // and re-testing (see docs/pile-mode-spec.md §11's timing investigation).
+    // itself vs. the §4.4 classify/part-ID-resolution step -- is visible
+    // without another round of guessing and re-testing (see
+    // docs/pile-mode-spec.md §11's timing investigation). Surfaced on
+    // PileResultsView (#if DEBUG, see lastPileScanTimingSummary) rather than
+    // only the Xcode console, which proved hard to read mid-test remotely.
     var classifications: [PileMatchClassification] = []
     classifications.reserveCapacity(cropData.count)
     pileScanProgress = (0, cropData.count)
@@ -314,27 +332,17 @@ final class BuildDetailViewModel: ObservableObject {
       pileScanProgress = (index + 1, cropData.count)
     }
     pileScanProgress = nil
-    let totalSeconds = prepareSeconds + recognizeSeconds + classifySeconds
-    Self.logPileTiming(
-      "\(cropData.count) crops -- prepare \(prepareSeconds)s, recognize \(recognizeSeconds)s, "
-        + "classify \(classifySeconds)s, total \(totalSeconds)s"
-    )
+    let totalSeconds = burstSeconds + prepareSeconds + recognizeSeconds + classifySeconds
+    #if DEBUG
+    lastPileScanTimingSummary =
+      "\(cropData.count) crops · burst \(burstSeconds)s · prepare \(prepareSeconds)s · "
+      + "recognize \(recognizeSeconds)s · classify \(classifySeconds)s · total \(totalSeconds)s"
+    #endif
 
     let tally = PileMatcher.tally(classifications, against: build.parts)
     applyPileTally(tally)
     pileScanResult = PileScanPresentation(image: detected.image, pieces: detected.pieces, classifications: classifications, tally: tally)
   }
-
-  /// Console-only timing breakdown for diagnosing pile scan latency against
-  /// the §5 acceptance targets -- not user-facing, and not persisted
-  /// anywhere; read directly from Xcode's console during a test run.
-  #if DEBUG
-  private static func logPileTiming(_ message: String) {
-    print("[PileTiming] \(message)")
-  }
-  #else
-  private static func logPileTiming(_ message: String) {}
-  #endif
 
   private static func seconds(_ duration: Duration) -> Double {
     let components = duration.components

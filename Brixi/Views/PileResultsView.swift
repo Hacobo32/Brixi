@@ -25,6 +25,13 @@ struct PileResultsView: View {
   let pieces: [PileSegmenter.DetectedPiece]
   let classifications: [PileMatchClassification]
   let tally: PileMatcher.Tally
+  /// Phase timing for this scan ("12 crops · burst 8.1s · prepare 1.2s ·
+  /// recognize 5.4s · classify 52.3s · total 67.0s"), DEBUG-only
+  /// instrumentation for the §5 timing investigation -- nil outside
+  /// BuildDetailView's real pile-scan path (e.g. the segmentation debug
+  /// screen, which doesn't time its own separate recognize/classify taps),
+  /// and always nil in a release build. See BuildDetailViewModel.
+  var timingSummary: String? = nil
 
   @Environment(\.dismiss) private var dismiss
   @State private var highlightedPartId: String?
@@ -51,7 +58,14 @@ struct PileResultsView: View {
             .font(.caption)
             .foregroundStyle(.secondary)
             .padding(.horizontal)
-            .padding(.bottom, 4)
+            .padding(.bottom, timingSummary == nil ? 4 : 0)
+          if let timingSummary {
+            Text(timingSummary)
+              .font(.caption2.monospaced())
+              .foregroundStyle(.secondary)
+              .padding(.horizontal)
+              .padding(.bottom, 4)
+          }
         }
         .listRowInsets(EdgeInsets())
 
