@@ -10,31 +10,58 @@
 import Foundation
 
 enum NeededPartMatcher {
-  /// Tries each of PartIDResolver's ID candidates (raw ID, shape-stripped
-  /// base ID, then -- only if neither of those matched -- a live
-  /// Rebrickable lookup) against the catalog's part family in order, and
-  /// returns every needed-parts row the first matching candidate hits --
-  /// more than one means this part shape is needed in multiple colors,
-  /// which the caller uses to decide whether color needs consulting.
+  /// Tries PartIDResolver's local candidates (raw ID, shape-stripped base
+  /// ID) against the catalog's part family in order, no network -- returns
+  /// every needed-parts row the first matching candidate hits, more than
+  /// one meaning this part shape is needed in multiple colors (the caller
+  /// uses that to decide whether color needs consulting).
+  static func matchLocal(
+    _ item: BrickognizeItem,
+    in parts: [NeededPart],
+    catalog: CatalogDatabase,
+    resolver: PartIDResolver
+  ) -> [NeededPart] {
+    for candidate in resolver.localCandidates(for: item) {
+      let found = matches(forPartNum: candidate, in: parts, catalog: catalog)
+      if !found.isEmpty {
+        return found
+      }
+    }
+    return []
+  }
+
+  /// A live Rebrickable lookup for `item`, independent of whether local
+  /// candidates were already tried -- callers that want "local, then live
+  /// only if local came up empty" should check `matchLocal` first
+  /// themselves (PileMatcher.classify caps this to once per crop rather
+  /// than once per ranked item -- see its own doc comment).
+  static func matchLive(
+    _ item: BrickognizeItem,
+    in parts: [NeededPart],
+    catalog: CatalogDatabase,
+    resolver: PartIDResolver
+  ) async -> [NeededPart] {
+    guard let resolved = await resolver.liveLookup(for: item) else { return [] }
+    return matches(forPartNum: resolved, in: parts, catalog: catalog)
+  }
+
+  /// `matchLocal`, falling back to `matchLive` only if that came up empty
+  /// -- single-piece mode's one-item-per-scan shape, where an extra round
+  /// trip on a miss is cheap. Pile mode uses `matchLocal`/`matchLive`
+  /// directly instead, to cap live lookups per crop (see PileMatcher).
   static func match(
     _ item: BrickognizeItem,
     in parts: [NeededPart],
     catalog: CatalogDatabase,
     resolver: PartIDResolver
   ) async -> [NeededPart] {
-    func matches(forPartNum partNum: String) -> [NeededPart] {
-      let family = catalog.partFamily(partNum: partNum)
-      return parts.filter { family.contains($0.partNum) }
-    }
+    let local = matchLocal(item, in: parts, catalog: catalog, resolver: resolver)
+    if !local.isEmpty { return local }
+    return await matchLive(item, in: parts, catalog: catalog, resolver: resolver)
+  }
 
-    for candidate in resolver.localCandidates(for: item) {
-      let found = matches(forPartNum: candidate)
-      if !found.isEmpty {
-        return found
-      }
-    }
-
-    guard let resolved = await resolver.liveLookup(for: item) else { return [] }
-    return matches(forPartNum: resolved)
+  private static func matches(forPartNum partNum: String, in parts: [NeededPart], catalog: CatalogDatabase) -> [NeededPart] {
+    let family = catalog.partFamily(partNum: partNum)
+    return parts.filter { family.contains($0.partNum) }
   }
 }

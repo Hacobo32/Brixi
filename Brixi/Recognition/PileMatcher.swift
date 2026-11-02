@@ -29,6 +29,23 @@ enum PileMatcher {
   /// `predict_color` breaks ties when the matched shape is needed in more
   /// than one color -- same tie-break BuildDetailViewModel.evaluate() uses
   /// for single-piece mode.
+  ///
+  /// Matching is local-only (no network) for every ranked item, with at
+  /// most **one** live Rebrickable lookup per crop -- on the top item,
+  /// and only if its local candidates didn't already match. This is what
+  /// catches §6's printed/variant-ID mismatch case (Brickognize's ID
+  /// disagreeing with Rebrickable's for the item that's actually the
+  /// real match), without paying a network round trip per ranked item on
+  /// every crop that simply isn't part of this build -- most crops in a
+  /// real pile. Previously each of up to 3 ranked items could trigger its
+  /// own live lookup (and the top item could trigger two, once here and
+  /// again from the "maybe" loop below re-checking it), which was the
+  /// dominant cost behind a pile scan's classify step still taking ~70s
+  /// after the first fix removed the *unconditional* lookup -- see
+  /// docs/pile-mode-spec.md §11. Items 2-3 no longer get a live lookup at
+  /// all: "maybe" isn't auto-counted, so the lower recall on an exotic
+  /// variant there is an acceptable trade for not scaling network calls
+  /// with how cluttered the pile is.
   static func classify(
     _ result: BrickognizeSearchResult,
     against parts: [NeededPart],
@@ -39,19 +56,28 @@ enum PileMatcher {
     guard !rankedItems.isEmpty else { return .ignore }
     let topColorId = result.colors?.first.flatMap { Int($0.id) }
 
-    if let topItem = rankedItems.first,
-       topItem.type == .part || topItem.type == .sticker,
-       topItem.score >= 0.75 {
-      let matches = await NeededPartMatcher.match(topItem, in: parts, catalog: catalog, resolver: resolver)
-      if let firstMatch = matches.first {
-        return .found(matches.first { $0.colorId == topColorId } ?? firstMatch)
+    func pick(_ matches: [NeededPart]) -> NeededPart? {
+      guard let firstMatch = matches.first else { return nil }
+      return matches.first { $0.colorId == topColorId } ?? firstMatch
+    }
+
+    var topMatches: [NeededPart] = []
+    if let topItem = rankedItems.first, topItem.type == .part || topItem.type == .sticker {
+      topMatches = NeededPartMatcher.matchLocal(topItem, in: parts, catalog: catalog, resolver: resolver)
+      if topMatches.isEmpty {
+        topMatches = await NeededPartMatcher.matchLive(topItem, in: parts, catalog: catalog, resolver: resolver)
+      }
+      if topItem.score >= 0.75, let match = pick(topMatches) {
+        return .found(match)
+      }
+      if topItem.score >= 0.50, let match = pick(topMatches) {
+        return .maybe(match)
       }
     }
 
-    for item in rankedItems where item.score >= 0.50 && (item.type == .part || item.type == .sticker) {
-      let matches = await NeededPartMatcher.match(item, in: parts, catalog: catalog, resolver: resolver)
-      if let firstMatch = matches.first {
-        return .maybe(matches.first { $0.colorId == topColorId } ?? firstMatch)
+    for item in rankedItems.dropFirst() where item.score >= 0.50 && (item.type == .part || item.type == .sticker) {
+      if let match = pick(NeededPartMatcher.matchLocal(item, in: parts, catalog: catalog, resolver: resolver)) {
+        return .maybe(match)
       }
     }
 
