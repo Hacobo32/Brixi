@@ -275,32 +275,44 @@ final class BuildDetailViewModel: ObservableObject {
 
   private func runPileScan(on frames: [Data], source: CaptureSource, burstSeconds: Double) async {
     let clock = ContinuousClock()
-    let prepareStart = clock.now
 
+    // "prepare" turned out to be the real cost (54s+, regardless of the
+    // Save Captures toggle -- that was a coincidence, not the cause), so
+    // it's broken into its own sub-steps here instead of guessing again
+    // at which one -- see docs/pile-mode-spec.md §11's timing investigation.
+    let pickStart = clock.now
     guard let picked = await Task.detached(priority: .userInitiated, operation: {
       BurstFrameSelector.pickBest(from: frames)
     }).value else {
       errorMessage = "Couldn't process that capture."
       return
     }
-    lastCaptureDiagnostics = await CaptureDiagnostics.record(picked, source: source)
+    let pickSeconds = Self.seconds(clock.now - pickStart)
 
+    let diagnosticsStart = clock.now
+    lastCaptureDiagnostics = await CaptureDiagnostics.record(picked, source: source)
+    let diagnosticsSeconds = Self.seconds(clock.now - diagnosticsStart)
+
+    let segmentStart = clock.now
     guard let detected = await Task.detached(priority: .userInitiated, operation: {
       PileSegmenter.detectPieces(in: picked)
     }).value else {
       errorMessage = "Couldn't process that image."
       return
     }
+    let segmentSeconds = Self.seconds(clock.now - segmentStart)
     guard !detected.pieces.isEmpty else {
       errorMessage = "Couldn't find any pieces in that photo. Spread them out with gaps and try again."
       return
     }
 
+    let cropStart = clock.now
     let crops = await Task.detached(priority: .userInitiated, operation: {
       detected.pieces.compactMap { piece in PileSegmenter.crop(piece, from: detected.image) }
     }).value
     let cropData = crops.compactMap { UIImage(cgImage: $0).jpegData(compressionQuality: 0.9) }
-    let prepareSeconds = Self.seconds(clock.now - prepareStart)
+    let cropSeconds = Self.seconds(clock.now - cropStart)
+    let prepareSeconds = pickSeconds + diagnosticsSeconds + segmentSeconds + cropSeconds
 
     guard let catalog, let build else {
       errorMessage = "Recognition isn't available -- the local catalog failed to load."
@@ -334,9 +346,12 @@ final class BuildDetailViewModel: ObservableObject {
     pileScanProgress = nil
     let totalSeconds = burstSeconds + prepareSeconds + recognizeSeconds + classifySeconds
     #if DEBUG
+    func fmt(_ value: Double) -> String { String(format: "%.1f", value) }
     lastPileScanTimingSummary =
-      "\(cropData.count) crops · burst \(burstSeconds)s · prepare \(prepareSeconds)s · "
-      + "recognize \(recognizeSeconds)s · classify \(classifySeconds)s · total \(totalSeconds)s"
+      "\(cropData.count) crops · burst \(fmt(burstSeconds))s · "
+      + "prepare \(fmt(prepareSeconds))s (pick \(fmt(pickSeconds)) · diag \(fmt(diagnosticsSeconds)) · "
+      + "segment \(fmt(segmentSeconds)) · crop \(fmt(cropSeconds))) · "
+      + "recognize \(fmt(recognizeSeconds))s · classify \(fmt(classifySeconds))s · total \(fmt(totalSeconds))s"
     #endif
 
     let tally = PileMatcher.tally(classifications, against: build.parts)
