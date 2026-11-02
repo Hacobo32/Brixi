@@ -214,7 +214,10 @@ final class BuildDetailViewModel: ObservableObject {
     beginPileScan()
     Task {
       do {
+        let clock = ContinuousClock()
+        let burstStart = clock.now
         let frames = try await glassesFrameSource.captureBurst()
+        Self.logPileTiming("burst capture (glasses): \(Self.seconds(clock.now - burstStart))s")
         await runPileScan(on: frames, source: .glasses)
       } catch {
         errorMessage = error.localizedDescription
@@ -235,7 +238,10 @@ final class BuildDetailViewModel: ObservableObject {
         defer { phoneCameraSource.stop() }
         // Lets auto-exposure/focus settle before the burst fires.
         try await Task.sleep(for: .milliseconds(400))
+        let clock = ContinuousClock()
+        let burstStart = clock.now
         let frames = try await phoneCameraSource.captureBurst()
+        Self.logPileTiming("burst capture (phone): \(Self.seconds(clock.now - burstStart))s")
         await runPileScan(on: frames, source: .phone)
       } catch {
         errorMessage = error.localizedDescription
@@ -252,6 +258,9 @@ final class BuildDetailViewModel: ObservableObject {
   }
 
   private func runPileScan(on frames: [Data], source: CaptureSource) async {
+    let clock = ContinuousClock()
+    let prepareStart = clock.now
+
     guard let picked = await Task.detached(priority: .userInitiated, operation: {
       BurstFrameSelector.pickBest(from: frames)
     }).value else {
@@ -275,28 +284,62 @@ final class BuildDetailViewModel: ObservableObject {
       detected.pieces.compactMap { piece in PileSegmenter.crop(piece, from: detected.image) }
     }).value
     let cropData = crops.compactMap { UIImage(cgImage: $0).jpegData(compressionQuality: 0.9) }
+    let prepareSeconds = Self.seconds(clock.now - prepareStart)
 
     guard let catalog, let build else {
       errorMessage = "Recognition isn't available -- the local catalog failed to load."
       return
     }
 
+    // Timed separately (not just total) so a slow scan's cause -- Brickognize
+    // itself vs. the §4.4 classify/part-ID-resolution step -- shows up
+    // directly in the console instead of needing another round of guessing
+    // and re-testing (see docs/pile-mode-spec.md §11's timing investigation).
     var classifications: [PileMatchClassification] = []
     classifications.reserveCapacity(cropData.count)
     pileScanProgress = (0, cropData.count)
+    var recognizeSeconds = 0.0
+    var classifySeconds = 0.0
     for (index, crop) in cropData.enumerated() {
-      if let recognized = await pileRecognitionBatcher.recognize(crop: crop) {
+      let recognizeStart = clock.now
+      let recognized = await pileRecognitionBatcher.recognize(crop: crop)
+      recognizeSeconds += Self.seconds(clock.now - recognizeStart)
+      if let recognized {
+        let classifyStart = clock.now
         classifications.append(await PileMatcher.classify(recognized, against: build.parts, catalog: catalog, resolver: partIDResolver))
+        classifySeconds += Self.seconds(clock.now - classifyStart)
       } else {
         classifications.append(.ignore)
       }
       pileScanProgress = (index + 1, cropData.count)
     }
     pileScanProgress = nil
+    let totalSeconds = prepareSeconds + recognizeSeconds + classifySeconds
+    Self.logPileTiming(
+      "\(cropData.count) crops -- prepare \(prepareSeconds)s, recognize \(recognizeSeconds)s, "
+        + "classify \(classifySeconds)s, total \(totalSeconds)s"
+    )
 
     let tally = PileMatcher.tally(classifications, against: build.parts)
     applyPileTally(tally)
     pileScanResult = PileScanPresentation(image: detected.image, pieces: detected.pieces, classifications: classifications, tally: tally)
+  }
+
+  /// Console-only timing breakdown for diagnosing pile scan latency against
+  /// the §5 acceptance targets -- not user-facing, and not persisted
+  /// anywhere; read directly from Xcode's console during a test run.
+  #if DEBUG
+  private static func logPileTiming(_ message: String) {
+    print("[PileTiming] \(message)")
+  }
+  #else
+  private static func logPileTiming(_ message: String) {}
+  #endif
+
+  private static func seconds(_ duration: Duration) -> Double {
+    let components = duration.components
+    let value = Double(components.seconds) + Double(components.attoseconds) / 1e18
+    return (value * 10).rounded() / 10
   }
 
   /// Persists this scan's "found" counts immediately, capped at each
